@@ -1,0 +1,19 @@
+<svg width="600" height="600" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="80" y1="60" x2="530" y2="540" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#2AD4C9"/>
+      <stop offset="1" stop-color="#F5B971"/>
+    </linearGradient>
+    <linearGradient id="ring" x1="150" y1="120" x2="470" y2="480" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.05"/>
+    </linearGradient>
+  </defs>
+  <rect x="24" y="24" width="552" height="552" rx="56" fill="#08111F"/>
+  <rect x="48" y="48" width="504" height="504" rx="44" fill="url(#bg)"/>
+  <rect x="48" y="48" width="504" height="504" rx="44" fill="url(#ring)"/>
+  <circle cx="300" cy="270" r="126" fill="#08111F" fill-opacity="0.18"/>
+  <path d="M165 450C208 401 239 379 301 379C363 379 395 401 438 450" stroke="#08111F" stroke-width="18" stroke-linecap="round" opacity="0.28"/>
+  <text x="300" y="320" text-anchor="middle" fill="#08111F" font-family="Arial, Helvetica, sans-serif" font-size="116" font-weight="800" letter-spacing="4">AK</text>
+  <text x="300" y="382" text-anchor="middle" fill="#08111F" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" letter-spacing="6">KRISHNAN</text>
+</svg>
