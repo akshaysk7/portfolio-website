@@ -1,0 +1,19 @@
+# Binary assets must stay byte-exact. Without this, core.autocrlf=true on
+# Windows rewrites LF to CRLF inside resume.pdf on checkout, which shifts every
+# byte offset and breaks the PDF's xref table.
+*.pdf   binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.woff  binary
+*.woff2 binary
+
+# Source files normalise to LF in the repository.
+*.html  text eol=lf
+*.css   text eol=lf
+*.js    text eol=lf
+*.svg   text eol=lf
+*.md    text eol=lf
+*.py    text eol=lf

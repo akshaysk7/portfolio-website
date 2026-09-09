@@ -3,195 +3,386 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Akshay S Krishnan | Portfolio</title>
-  <meta
-    name="description"
-    content="Portfolio website for Akshay S Krishnan, a B.Tech CSE student specializing in AI and ML."
-  />
+  <title>Akshay S Krishnan — Learning Python, building with it</title>
+  <meta name="description" content="Akshay S Krishnan — 2nd year B.Tech CSE (AI/ML) at SRM Ramapuram. Currently deep in Python, DSA and machine learning, building a Premier League match predictor and a document Q&amp;A system." />
+  <meta name="theme-color" content="#04050a" />
+  <meta property="og:title" content="Akshay S Krishnan — Learning Python, building with it" />
+  <meta property="og:description" content="2nd year CSE (AI/ML) student in Chennai. Python, DSA, and machine learning — learned by building." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="assets/monogram.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap"
-    rel="stylesheet"
-  />
+  <link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:wght@400;500&family=Sora:wght@400;500;600;700&family=Unbounded:wght@600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="background-glow glow-one"></div>
-  <div class="background-glow glow-two"></div>
+  <div class="scroll-progress" aria-hidden="true"><span id="scrollBar"></span></div>
 
-  <header class="site-header">
-    <a class="brand" href="#top" aria-label="Akshay S Krishnan home">
-      <span class="brand-mark">AK</span>
-      <span class="brand-text">
-        <strong>Akshay S Krishnan</strong>
-        <small>Computer Science student</small>
-      </span>
+  <div class="aurora" aria-hidden="true">
+    <span class="orb orb-a"></span>
+    <span class="orb orb-b"></span>
+    <span class="orb orb-c"></span>
+    <canvas id="rain" class="rain"></canvas>
+    <span class="grid-overlay"></span>
+  </div>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header" id="siteHeader">
+    <a class="brand" href="#top" aria-label="Akshay S Krishnan &mdash; back to top">
+      <span class="brand-prompt" aria-hidden="true"><i>&gt;</i><i>&gt;</i><i>&gt;</i></span>
+      <span
+        class="brand-name"
+        id="brandName"
+        aria-hidden="true"
+        data-name="akshay.py"
+        data-alt="@akshaysk7"
+      >akshay<span class="brand-ext">.py</span></span>
+      <span class="brand-caret" aria-hidden="true"></span>
     </a>
 
-    <button class="menu-button" type="button" aria-expanded="false" aria-controls="site-nav">
-      Menu
+    <button class="menu-button" id="menuButton" type="button" aria-expanded="false" aria-controls="site-nav">
+      <span id="menuLabel">menu</span>
     </button>
 
-    <nav id="site-nav" class="site-nav">
-      <a href="#about">About</a>
-      <a href="#skills">Skills</a>
-      <a href="#projects">Projects</a>
-      <a href="#education">Education</a>
-      <a href="#contact">Contact</a>
+    <nav id="site-nav" class="site-nav" aria-label="Primary">
+      <a href="#now">now</a>
+      <a href="#building">building</a>
+      <a href="#shipped">shipped</a>
+      <a href="#education">education</a>
+      <a href="#contact">contact</a>
+      <a class="nav-cta" href="assets/resume.pdf" download>r&eacute;sum&eacute; <span aria-hidden="true">&darr;</span></a>
     </nav>
   </header>
 
-  <main id="top">
-    <section class="hero section-card reveal">
-      <div class="hero-copy">
-        <p class="eyebrow">Aspiring software developer | AI and ML student</p>
-        <h1>Building a thoughtful portfolio around curiosity, consistency, and practical work.</h1>
-        <p class="hero-summary">
-          I am a second-year B.Tech Computer Science student specializing in Artificial Intelligence and Machine Learning at SRM Institute of Science and Technology, Ramapuram. I enjoy learning by building, exploring AI tools, and gradually growing into a stronger software developer.
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="hero-inner">
+        <p class="status-pill reveal">
+          <span class="pulse" aria-hidden="true"></span>
+          Currently focused on <strong>Python</strong>
         </p>
 
-        <div class="hero-actions">
-          <a class="button button-primary" href="assets/resume.pdf" download>Download Resume</a>
-          <a class="button button-secondary" href="#projects">See Projects</a>
+        <h1 class="hero-title" data-kinetic>LEARNING. BUILDING. ASCENDING.</h1>
+
+        <p class="hero-summary reveal" data-delay="1">
+          I&rsquo;m Akshay, a second-year B.Tech Computer Science student specialising in AI &amp; ML at
+          SRM Institute of Science and Technology, Ramapuram. Right now almost all of my energy goes
+          into one thing: getting genuinely good at Python &mdash; through daily DSA, hands-on data work,
+          and machine learning projects I actually have to finish.
+        </p>
+
+        <div class="hero-actions reveal" data-delay="2">
+          <a class="button button-primary magnetic" href="#building">See what I&rsquo;m building</a>
+          <a class="button button-ghost magnetic" href="assets/resume.pdf" download>Download r&eacute;sum&eacute;</a>
         </div>
 
-        <div class="hero-pills" aria-label="Quick profile facts">
-          <span>Chennai, India</span>
-          <span>Second Year</span>
-          <span>AI and ML Track</span>
-          <span>Open to learning</span>
-        </div>
+        <ul class="hero-facts reveal" data-delay="3">
+          <li><span>Based in</span><strong>Chennai, India</strong></li>
+          <li><span>Year</span><strong>2nd year B.Tech</strong></li>
+          <li><span>Track</span><strong>AI &amp; Machine Learning</strong></li>
+          <li><span>Main language</span><strong>Python</strong></li>
+        </ul>
       </div>
 
-      <aside class="hero-visual" aria-label="Profile card">
-        <img src="assets/monogram.svg" alt="Akshay S Krishnan monogram graphic" class="monogram" />
-        <div class="profile-card">
-          <p class="profile-label">Focus areas</p>
-          <ul>
-            <li>Software development foundations</li>
-            <li>AI and LLM exploration</li>
-            <li>Project-based learning</li>
+      <div class="ticker" aria-hidden="true">
+        <div class="ticker-track">
+          <span>Python</span><i>&#9670;</i><span>Data Structures &amp; Algorithms</span><i>&#9670;</i>
+          <span>pandas</span><i>&#9670;</i><span>scikit-learn</span><i>&#9670;</i><span>Feature engineering</span><i>&#9670;</i>
+          <span>Django</span><i>&#9670;</i><span>RAG</span><i>&#9670;</i><span>Operating Systems</span><i>&#9670;</i>
+          <span>Python</span><i>&#9670;</i><span>Data Structures &amp; Algorithms</span><i>&#9670;</i>
+          <span>pandas</span><i>&#9670;</i><span>scikit-learn</span><i>&#9670;</i><span>Feature engineering</span><i>&#9670;</i>
+          <span>Django</span><i>&#9670;</i><span>RAG</span><i>&#9670;</i><span>Operating Systems</span><i>&#9670;</i>
+        </div>
+      </div>
+    </section>
+
+    <section id="now" class="section">
+      <div class="section-heading reveal">
+        <p class="eyebrow"><span class="eyebrow-dot"></span>Right now</p>
+        <h2>What I&rsquo;m learning this semester</h2>
+        <p class="section-lede">
+          Everything below is live and in progress &mdash; not a list of things I once touched.
+          Python is the spine of all of it.
+        </p>
+      </div>
+
+      <article class="focus-card reveal">
+        <div class="focus-copy">
+          <p class="focus-tag">Primary focus</p>
+          <h3>Python, from the fundamentals up</h3>
+          <p>
+            I restarted Python from the ground up rather than skimming syntax and moving on.
+            The goal is fluency I can rely on: clean data handling, readable code, and enough
+            comfort with the language that the hard part of a project is the problem, not the tooling.
+          </p>
+          <ul class="focus-points">
+            <li><strong>Fundamentals</strong> &mdash; data model, iteration, functions, error handling, writing code I can re-read a month later</li>
+            <li><strong>Applied to data</strong> &mdash; pandas for cleaning and reshaping real, messy datasets</li>
+            <li><strong>Applied to DSA</strong> &mdash; solving problems in Python daily so the language becomes reflex</li>
+            <li><strong>Applied to ML</strong> &mdash; scikit-learn, with evaluation done honestly</li>
           </ul>
         </div>
-      </aside>
+
+        <div class="terminal" aria-hidden="true">
+          <div class="terminal-bar"><i></i><i></i><i></i><span>python3</span></div>
+          <pre class="terminal-body"><code id="typedCode"></code><span class="caret"></span></pre>
+        </div>
+      </article>
+
+      <div class="track-grid">
+        <article class="track-card reveal" data-delay="1">
+          <header>
+            <h3>DSA in Python</h3>
+            <span class="chip chip-live">Daily</span>
+          </header>
+          <p>
+            Practising every day and currently working through <strong>arrays</strong>. It&rsquo;s also a graded
+            subject this semester, so the theory and the practice reinforce each other.
+          </p>
+          <p class="track-meta">Current topic <strong>Arrays</strong></p>
+        </article>
+
+        <article class="track-card reveal" data-delay="2">
+          <header>
+            <h3>Machine learning</h3>
+            <span class="chip chip-live">In progress</span>
+          </header>
+          <p>
+            Learning it by building rather than by collecting courses. That means the unglamorous
+            parts: data cleaning, feature engineering, and being rigorous about evaluation instead of
+            chasing a nice-looking accuracy number.
+          </p>
+          <p class="track-meta">Stack <strong>pandas &middot; scikit-learn</strong></p>
+        </article>
+
+        <article class="track-card reveal" data-delay="3">
+          <header>
+            <h3>Backend &mdash; Django</h3>
+            <span class="chip chip-next">Starting soon</span>
+          </header>
+          <p>
+            The next step for Python: taking it server-side. Working through Traversy Media&rsquo;s
+            <em>Django Dev to Deployment</em> course so the models I build have somewhere to live.
+          </p>
+          <p class="track-meta">Goal <strong>Ship something deployed</strong></p>
+        </article>
+
+        <article class="track-card reveal" data-delay="4">
+          <header>
+            <h3>Frontend</h3>
+            <span class="chip chip-live">Learning by building</span>
+          </header>
+          <p>
+            I&rsquo;m actively learning frontend by developing this portfolio. The site is
+            vibe-coded &mdash; built with AI assistance rather than written from scratch &mdash; and
+            I learn by reading what comes out, changing it, and working out why it behaves the
+            way it does.
+          </p>
+          <p class="track-meta">Live example <strong>This page</strong></p>
+        </article>
+      </div>
+
+      <div class="coursework reveal">
+        <p class="coursework-label">Coursework this semester</p>
+        <ul>
+          <li>Operating Systems</li>
+          <li>Computer Organisation &amp; Architecture</li>
+          <li>Data Structures &amp; Algorithms</li>
+        </ul>
+      </div>
     </section>
 
-    <section id="about" class="section-card reveal">
-      <div class="section-heading">
-        <p class="eyebrow">About</p>
-        <h2>A practical learner with a growing interest in AI.</h2>
+    <section id="building" class="section">
+      <div class="section-heading reveal">
+        <p class="eyebrow"><span class="eyebrow-dot"></span>Building</p>
+        <h2>Two projects in progress</h2>
+        <p class="section-lede">
+          Both are unfinished on purpose &mdash; they&rsquo;re where the Python and ML learning actually gets tested.
+        </p>
       </div>
-      <p class="section-text">
-        I am an aspiring software developer who focuses on learning through consistent practice and small projects. I have recently developed a stronger interest in AI models, LLMs, and the way intelligent systems can be used to automate useful work. I like exploring new ideas with a calm, hands-on approach and I aim to keep improving my technical foundation step by step.
-      </p>
-      <p class="section-text">
-        Outside academics, I follow football, play video games occasionally, and go to the gym. Those routines help me stay balanced, focused, and curious while I continue learning.
-      </p>
+
+      <article class="project project-featured reveal">
+        <div class="project-head">
+          <div>
+            <p class="project-kicker">Machine learning &middot; In progress</p>
+            <h3>Premier League Match Predictor</h3>
+          </div>
+          <span class="chip chip-live">Feature engineering stage</span>
+        </div>
+
+        <p class="project-lede">
+          A supervised classification model that predicts match outcomes &mdash; home win, draw, or away win &mdash;
+          from historical match data.
+        </p>
+
+        <div class="project-detail">
+          <div>
+            <h4>The interesting constraint</h4>
+            <p>
+              Football is genuinely high-variance. Bookmakers, with far more data and money than I have,
+              land around 55% accuracy. So this project isn&rsquo;t really about hitting a big number &mdash; it&rsquo;s
+              about extracting real signal from noise and being honest about evaluation.
+            </p>
+          </div>
+          <div>
+            <h4>A deliberate choice</h4>
+            <p>
+              I excluded bookmaker odds from the feature set. Including them would mean decoding
+              someone else&rsquo;s prediction and calling it mine. The point is to build the prediction,
+              not to launder one.
+            </p>
+          </div>
+        </div>
+
+        <footer class="project-foot">
+          <ul class="tech-list">
+            <li>Python</li><li>pandas</li><li>scikit-learn</li>
+          </ul>
+          <a class="link-arrow" href="https://github.com/akshaysk7/football-predictor" target="_blank" rel="noreferrer">
+            View repository <span aria-hidden="true">&rarr;</span>
+          </a>
+        </footer>
+      </article>
+
+      <article class="project reveal" data-delay="1">
+        <div class="project-head">
+          <div>
+            <p class="project-kicker">Team project &middot; In progress</p>
+            <h3>College Document Q&amp;A (RAG)</h3>
+          </div>
+          <span class="chip chip-live">Building</span>
+        </div>
+
+        <p class="project-lede">
+          A retrieval-augmented generation system that answers questions about college rules and
+          circulars &mdash; and cites the source document for every answer it gives.
+        </p>
+
+        <div class="project-detail">
+          <div>
+            <h4>It knows when to stop</h4>
+            <p>
+              If the documents don&rsquo;t cover a question, it refuses to answer rather than inventing
+              something plausible. For an official-rules system, a confident wrong answer is worse
+              than no answer.
+            </p>
+          </div>
+          <div>
+            <h4>The unanswered questions are the product</h4>
+            <p>
+              Every query it can&rsquo;t answer gets logged into a documentation-gap report for the
+              administration &mdash; turning the system&rsquo;s failures into something genuinely useful to them.
+            </p>
+          </div>
+        </div>
+
+        <footer class="project-foot">
+          <ul class="tech-list">
+            <li>Python</li><li>Vector database</li><li>Embeddings</li><li>LLM API</li>
+          </ul>
+          <span class="link-muted">Repository coming soon</span>
+        </footer>
+      </article>
     </section>
 
-    <section id="skills" class="section-card reveal">
-      <div class="section-heading">
-        <p class="eyebrow">Skills</p>
-        <h2>What I am currently practicing.</h2>
+    <section id="shipped" class="section">
+      <div class="section-heading reveal">
+        <p class="eyebrow"><span class="eyebrow-dot"></span>Shipped</p>
+        <h2>Things that are done and running</h2>
       </div>
-      <div class="skill-grid">
-        <article class="skill-card">
-          <h3>Programming</h3>
-          <p>C, C++</p>
-        </article>
-        <article class="skill-card">
-          <h3>Learning</h3>
-          <p>AI tools, LLM workflows, problem solving</p>
-        </article>
-        <article class="skill-card">
-          <h3>Tools</h3>
-          <p>GitHub, VS Code, ChatGPT-assisted development</p>
-        </article>
-        <article class="skill-card">
-          <h3>Interests</h3>
-          <p>AI, software development, automation, football analysis</p>
-        </article>
-      </div>
-    </section>
 
-    <section id="projects" class="section-card reveal">
-      <div class="section-heading">
-        <p class="eyebrow">Projects</p>
-        <h2>Building small things that solve real tasks.</h2>
-      </div>
-      <div class="project-list">
-        <article class="project-card">
-          <div class="project-meta">Featured project</div>
+      <div class="shipped-grid">
+        <article class="shipped-card reveal">
           <h3>Telegram content scheduler bot</h3>
           <p>
-            A Telegram chatbot that schedules LinkedIn posts twice a week to keep a profile active and consistent. It was built with Codex assistance and is a good example of practical automation work.
+            A Telegram bot that schedules LinkedIn posts twice a week to keep a profile consistently
+            active. Small, but it does a real job on a real schedule without me touching it.
           </p>
-          <ul class="project-points">
-            <li>Automates posting cadence</li>
-            <li>Supports profile visibility</li>
-            <li>Shows applied AI-assisted development</li>
-          </ul>
+          <ul class="tech-list"><li>Automation</li><li>Bot API</li><li>Scheduling</li></ul>
         </article>
-        <article class="project-card project-card-muted">
-          <div class="project-meta">Portfolio project</div>
-          <h3>This website</h3>
+
+        <article class="shipped-card reveal" data-delay="1">
+          <h3>This portfolio</h3>
           <p>
-            A clean personal portfolio that presents my background, interests, skills, and contact details in a simple format that is easy to update later.
+            Vibe-coded with AI assistance rather than written from scratch, and deliberately kept
+            as my frontend learning project. Every round of changes means reading the HTML, CSS and
+            JavaScript, adjusting it, and understanding a bit more of it.
           </p>
+          <ul class="tech-list"><li>HTML</li><li>CSS</li><li>JavaScript</li></ul>
+          <a class="link-arrow" href="https://github.com/akshaysk7/portfolio-website" target="_blank" rel="noreferrer">
+            Source <span aria-hidden="true">&rarr;</span>
+          </a>
         </article>
       </div>
     </section>
 
-    <section id="education" class="section-card reveal">
-      <div class="section-heading">
-        <p class="eyebrow">Education and certificate</p>
-        <h2>Current study path and early learning milestones.</h2>
+    <section id="education" class="section">
+      <div class="section-heading reveal">
+        <p class="eyebrow"><span class="eyebrow-dot"></span>Education</p>
+        <h2>Where I&rsquo;m studying</h2>
       </div>
+
       <div class="timeline">
-        <article class="timeline-item">
+        <article class="timeline-item reveal">
           <span class="timeline-badge">Now</span>
-          <div>
+          <div class="timeline-body">
             <h3>SRM Institute of Science and Technology, Ramapuram</h3>
-            <p>B.Tech in Computer Science Engineering with specialization in Artificial Intelligence and Machine Learning</p>
-            <p>Second year</p>
+            <p class="timeline-role">B.Tech, Computer Science &amp; Engineering &mdash; specialisation in Artificial Intelligence &amp; Machine Learning</p>
+            <p class="timeline-note">Second year &middot; Chennai, Tamil Nadu</p>
           </div>
         </article>
-        <article class="timeline-item">
-          <span class="timeline-badge">Certificate</span>
-          <div>
+
+        <article class="timeline-item reveal" data-delay="1">
+          <span class="timeline-badge badge-muted">Cert</span>
+          <div class="timeline-body">
             <h3>IBM SkillsBuild</h3>
-            <p>Basics of Machine Learning</p>
+            <p class="timeline-role">Basics of Machine Learning</p>
           </div>
         </article>
       </div>
     </section>
 
-    <section id="contact" class="section-card reveal contact-card">
-      <div class="section-heading">
-        <p class="eyebrow">Contact</p>
-        <h2>Let’s connect.</h2>
-      </div>
-      <div class="contact-grid">
-        <a href="mailto:akshaysk2007@gmail.com">
-          <span>Email</span>
-          <strong>akshaysk2007@gmail.com</strong>
-        </a>
-        <a href="https://github.com/akshaysk7" target="_blank" rel="noreferrer">
-          <span>GitHub</span>
-          <strong>github.com/akshaysk7</strong>
-        </a>
-        <a href="https://www.linkedin.com/in/akshay-s-1968092a7/" target="_blank" rel="noreferrer">
-          <span>LinkedIn</span>
-          <strong>akshay-s-1968092a7</strong>
-        </a>
+    <section id="contact" class="section">
+      <div class="contact-card reveal">
+        <div class="section-heading">
+          <p class="eyebrow"><span class="eyebrow-dot"></span>Contact</p>
+          <h2>Let&rsquo;s talk</h2>
+          <p class="section-lede">
+            I&rsquo;m open to internships, collaborations, and anyone who wants to argue about
+            feature engineering or football.
+          </p>
+        </div>
+
+        <div class="contact-grid">
+          <a class="contact-link magnetic" href="mailto:akshaysk2007@gmail.com">
+            <span>Email</span>
+            <strong>akshaysk2007@gmail.com</strong>
+            <i aria-hidden="true">&rarr;</i>
+          </a>
+          <a class="contact-link magnetic" href="https://github.com/akshaysk7" target="_blank" rel="noreferrer">
+            <span>GitHub</span>
+            <strong>github.com/akshaysk7</strong>
+            <i aria-hidden="true">&rarr;</i>
+          </a>
+          <a class="contact-link magnetic" href="https://www.linkedin.com/in/akshay-s-krishnan-1968092a7/" target="_blank" rel="noreferrer">
+            <span>LinkedIn</span>
+            <strong>Akshay S Krishnan</strong>
+            <i aria-hidden="true">&rarr;</i>
+          </a>
+          <a class="contact-link magnetic" href="assets/resume.pdf" download>
+            <span>R&eacute;sum&eacute;</span>
+            <strong>Download PDF</strong>
+            <i aria-hidden="true">&darr;</i>
+          </a>
+        </div>
       </div>
     </section>
   </main>
 
   <footer class="site-footer">
-    <p>Built for Akshay S Krishnan.</p>
-    <p>Resume included as <a href="assets/resume.pdf" download>assets/resume.pdf</a>.</p>
+    <p><strong>Akshay S Krishnan</strong> &middot; Chennai, India</p>
+    <p class="footer-note">Vibe-coded &mdash; and how I&rsquo;m learning frontend.</p>
   </footer>
 
   <script src="script.js"></script>

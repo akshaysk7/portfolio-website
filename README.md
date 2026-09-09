@@ -1,27 +1,58 @@
-# Portfolio Website for Akshay S Krishnan
+# Portfolio — Akshay S Krishnan
 
-This is a complete static portfolio site with:
+Personal portfolio site. Plain HTML, CSS and JavaScript — no framework, no build step.
 
-- `index.html`
-- `styles.css`
-- `script.js`
-- `assets/`
-  - `monogram.svg`
-  - `resume.pdf`
+It is vibe-coded (built with AI assistance) and kept as an active frontend learning project:
+I read what it produces, change it, and work out why it behaves the way it does.
 
-## How to run in VS Code
+**Live:** https://akshaysk7.github.io/portfolio-website/
 
-1. Open the `portfolio-website` folder in VS Code.
-2. Open `index.html`.
-3. Either:
-   - Use the `Live Server` extension and click "Go Live", or
-   - Double-click `index.html` to open it in your browser.
+The site is organised around what I'm working on *right now* rather than a static list of
+skills: a Python-focused "Right now" section, projects currently in progress, and then
+finished work.
 
-There is no build step. You can edit the HTML, CSS, and JavaScript directly.
+## Files
 
-## Edit points
+| File | Purpose |
+| --- | --- |
+| `index.html` | All page content |
+| `styles.css` | Styling, layout, animation, responsive rules |
+| `script.js` | Nav, scroll progress, reveal-on-scroll, kinetic headline, typed terminal |
+| `build_resume.py` | Generates `assets/resume.pdf` |
+| `assets/` | Monogram and the generated résumé |
 
-- Update text in `index.html`
-- Change colors and layout in `styles.css`
-- Adjust interactions in `script.js`
-- Replace the resume by swapping `assets/resume.pdf`
+## Running it locally
+
+No build step — open `index.html` directly, or serve the folder:
+
+```bash
+python -m http.server 8000
+```
+
+Then visit http://localhost:8000.
+
+## Updating the résumé
+
+`assets/resume.pdf` is generated, so edit the script rather than the PDF:
+
+```bash
+pip install reportlab
+python build_resume.py
+```
+
+## Updating content
+
+Most edits are plain HTML in `index.html`:
+
+- **Current focus / status** — the `.status-pill` in the hero, and the `#now` section
+- **Learning tracks** — `.track-card` blocks; the `.chip` class sets the status label
+  (`chip-live` = green, `chip-next` = blue)
+- **Projects in progress** — `#building`
+- **Finished work** — `#shipped`
+- **Terminal animation** — the `TERMINAL_LINES` array in `script.js`
+
+## Notes
+
+- Animation is gated behind `prefers-reduced-motion`, which disables the background orbs,
+  marquee, typing and reveal transitions.
+- The layout is responsive down to ~360px; the nav collapses to a menu below 780px.
