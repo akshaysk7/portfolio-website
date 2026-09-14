@@ -17,7 +17,7 @@ finished work.
 | --- | --- |
 | `index.html` | All page content |
 | `styles.css` | Styling, layout, animation, responsive rules |
-| `script.js` | Nav, scroll progress, 3D headline, reveal-on-scroll, typed terminal, 3D loss-surface background, terminal tilt |
+| `script.js` | Nav, scroll progress, wordmark decode, 3D headline, reveal-on-scroll, typed terminal, 3D loss-surface background (pointer orbit, click to drop a run), terminal and card tilt |
 | `build_resume.py` | Generates `assets/resume.pdf` |
 | `assets/` | Monogram and the generated résumé |
 

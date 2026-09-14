@@ -249,6 +249,93 @@ if (typedCode && "IntersectionObserver" in window) {
   runTerminal();
 }
 
+/* ---------- brand decode ----------
+   The wordmark resolves out of noise on load, and swaps to the GitHub
+   handle on hover. The element ships with its real text already in the
+   HTML, so if this never runs the header still reads correctly. */
+
+const brandName = document.getElementById("brandName");
+
+if (brandName && !prefersReducedMotion) {
+  const NOISE = "01<>[]{}/\\|_-=+*#%$&";
+  const STEP_MS = 42;
+
+  let frameId = null;
+
+  // Once the text has resolved, re-render it so a file extension can carry
+  // the accent colour. Mid-scramble it stays flat, which reads as noise.
+  function paintSettled(text) {
+    const dot = text.lastIndexOf(".");
+
+    if (dot <= 0) {
+      brandName.textContent = text;
+      return;
+    }
+
+    brandName.textContent = text.slice(0, dot);
+    const extension = document.createElement("span");
+    extension.className = "brand-ext";
+    extension.textContent = text.slice(dot);
+    brandName.appendChild(extension);
+  }
+
+  function decodeTo(text) {
+    if (frameId !== null) window.cancelAnimationFrame(frameId);
+
+    const start = performance.now();
+    const duration = 55 * text.length;
+    // each character settles at its own moment, left to right
+    const settleAt = Array.from(text, (_, i) =>
+      (i / text.length) * duration * 0.65 + Math.random() * duration * 0.3
+    );
+
+    let lastPaint = 0;
+
+    function tick(now) {
+      const elapsed = now - start;
+
+      if (now - lastPaint >= STEP_MS) {
+        lastPaint = now;
+
+        let output = "";
+        let settled = true;
+
+        for (let i = 0; i < text.length; i += 1) {
+          if (elapsed >= settleAt[i]) {
+            output += text[i];
+          } else {
+            output += NOISE[Math.floor(Math.random() * NOISE.length)];
+            settled = false;
+          }
+        }
+
+        if (settled) {
+          paintSettled(text);
+          frameId = null;
+          return;
+        }
+
+        brandName.textContent = output;
+      }
+
+      frameId = window.requestAnimationFrame(tick);
+    }
+
+    frameId = window.requestAnimationFrame(tick);
+  }
+
+  const fullName = brandName.dataset.name;
+  const altName = brandName.dataset.alt;
+  const brandLink = brandName.closest(".brand");
+
+  decodeTo(fullName);
+
+  brandLink?.addEventListener("pointerenter", () => decodeTo(altName));
+  brandLink?.addEventListener("pointerleave", () => decodeTo(fullName));
+  brandLink?.addEventListener("focus", () => decodeTo(altName));
+  brandLink?.addEventListener("blur", () => decodeTo(fullName));
+}
+
 /* ---------- 3D loss surface ----------
    A made-up loss surface drawn as a wireframe in perspective, turning
    slowly, with a few gradient-descent runs (momentum plus a little noise)
@@ -268,6 +355,7 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
   const SPIN = 0.03; // radians per second
   const FOG_BANDS = 8;
   const RUNS = 3;
+  const MAX_RUNS = 5; // the looping runs plus any dropped in by clicking
   const TRAIL = 110; // points of history kept per run
   const TRAIL_BANDS = 5; // a trail fades in a few steps, one stroke each
   const STEP_MS = 60; // one optimiser step per tick
@@ -428,6 +516,11 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
     }
   }
 
+  function startRunAt(run, u, v, wait) {
+    Object.assign(run, { u, v, vu: 0, vv: 0, step: 0, still: 0, wait, done: false });
+    run.trail = [[u, v, heightOf(lossAt(u, v))]];
+  }
+
   function startRun(run, wait) {
     // Drop the run somewhere high on the surface: the best of a few tries.
     let best = null;
@@ -437,9 +530,7 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
       const value = lossAt(u, v);
       if (!best || value > best.value) best = { u, v, value };
     }
-
-    Object.assign(run, { u: best.u, v: best.v, vu: 0, vv: 0, step: 0, still: 0, wait, done: false });
-    run.trail = [[best.u, best.v, heightOf(best.value)]];
+    startRunAt(run, best.u, best.v, wait);
   }
 
   function advance(run) {
@@ -624,6 +715,32 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
       document.documentElement.addEventListener("pointerleave", () => {
         pointerX = 0.5;
         pointerY = 0.5;
+      });
+
+      // Click open space to drop your own optimiser onto the surface. It
+      // starts from the grid point nearest the click and takes over the
+      // readout; the oldest run makes way once there are too many.
+      document.addEventListener("click", (event) => {
+        if (!width || event.target.closest("a, button, .focus-card, .project, .contact-card")) return;
+        if (String(window.getSelection())) return;
+
+        let nearest = -1;
+        let nearestDistance = 45 * 45;
+        for (let k = 0; k < vertexCount; k += 1) {
+          const dx = screenX[k] - event.clientX;
+          const dy = screenY[k] - event.clientY;
+          const distance = dx * dx + dy * dy;
+          if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearest = k;
+          }
+        }
+        if (nearest < 0) return;
+
+        const run = {};
+        startRunAt(run, coords[nearest % GRID], coords[Math.floor(nearest / GRID)], 0);
+        runs.unshift(run);
+        if (runs.length > MAX_RUNS) runs.pop();
       });
     }
 
