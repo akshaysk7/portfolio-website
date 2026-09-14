@@ -254,7 +254,7 @@ const surfaceCanvas = document.getElementById("landscape");
 if (surfaceCanvas && surfaceCanvas.getContext) {
   const ctx = surfaceCanvas.getContext("2d");
 
-  const GRID = 44; // vertices per side
+  const GRID = 34; // vertices per side
   const EXTENT = 2; // the surface spans -EXTENT..EXTENT world units
   const PITCH = 0.42; // camera elevation, radians
   const DISTANCE = 4.2; // camera distance from the centre
@@ -262,8 +262,10 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
   const FOG_BANDS = 8;
   const RUNS = 3;
   const TRAIL = 110; // points of history kept per run
+  const TRAIL_BANDS = 5; // a trail fades in a few steps, one stroke each
   const STEP_MS = 60; // one optimiser step per tick
-  const FRAME_MS = 33; // ~30fps is plenty for a background
+  const FRAME_MS = 45; // ~22fps is plenty for something turning this slowly
+  const MAX_DPR = 1; // faint 1px lines don't need a retina-sized canvas
   const LR = 0.0022;
   const MOMENTUM = 0.9;
   const NOISE = 0.0008;
@@ -271,10 +273,21 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
   const COS_P = Math.cos(PITCH);
   const SIN_P = Math.sin(PITCH);
   const vertexCount = GRID * GRID;
-  const heights = new Float32Array(vertexCount);
+  const coords = Float32Array.from({ length: GRID }, (_, i) => (i / (GRID - 1)) * 2 * EXTENT - EXTENT);
+  const vertexZ = new Float32Array(vertexCount);
   const screenX = new Float32Array(vertexCount);
   const screenY = new Float32Array(vertexCount);
   const depths = new Float32Array(vertexCount);
+
+  // The colours never change, so build the stroke styles once, not per frame.
+  const BAND_STYLES = Array.from(
+    { length: FOG_BANDS },
+    (_, b) => `rgba(196, 154, 92, ${(0.32 - (b / (FOG_BANDS - 1)) * 0.29).toFixed(3)})`
+  );
+  const TRAIL_STYLES = Array.from(
+    { length: TRAIL_BANDS },
+    (_, b) => `rgba(237, 226, 207, ${(((b + 1) / TRAIL_BANDS) * 0.85).toFixed(3)})`
+  );
 
   let width = 0;
   let height = 0;
@@ -291,8 +304,7 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
   let rafId = null;
   let lastFrame = 0;
   let lastStep = 0;
-
-  const gridCoord = (i) => (i / (GRID - 1)) * 2 * EXTENT - EXTENT;
+  let fade = null;
 
   // A shallow bowl plus a handful of gaussian wells and a couple of bumps.
   function lossAt(u, v) {
@@ -333,21 +345,29 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
     high = -Infinity;
     for (let j = 0; j < GRID; j += 1) {
       for (let i = 0; i < GRID; i += 1) {
-        const value = lossAt(gridCoord(i), gridCoord(j));
-        heights[j * GRID + i] = value;
+        const value = lossAt(coords[i], coords[j]);
+        vertexZ[j * GRID + i] = value;
         if (value < low) low = value;
         if (value > high) high = value;
       }
     }
+    // The surface never changes, so turn losses into heights once.
+    for (let k = 0; k < vertexCount; k += 1) vertexZ[k] = heightOf(vertexZ[k]);
   }
 
   // World (u across, v into the screen, z up) to screen x, y and depth.
+  // Writes into one shared point so a frame allocates nothing per vertex.
+  const projected = { x: 0, y: 0, depth: 0 };
+
   function project(u, v, z) {
     const x = u * cosYaw - v * sinYaw;
     const y = u * sinYaw + v * cosYaw;
     const depth = DISTANCE + y * COS_P - z * SIN_P;
     const up = y * SIN_P + z * COS_P;
-    return [centerX + (focal * x) / depth, centerY - (focal * up) / depth, depth];
+    projected.x = centerX + (focal * x) / depth;
+    projected.y = centerY - (focal * up) / depth;
+    projected.depth = depth;
+    return projected;
   }
 
   function drawSurface() {
@@ -357,18 +377,20 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
     for (let j = 0; j < GRID; j += 1) {
       for (let i = 0; i < GRID; i += 1) {
         const k = j * GRID + i;
-        const [px, py, depth] = project(gridCoord(i), gridCoord(j), heightOf(heights[k]));
-        screenX[k] = px;
-        screenY[k] = py;
-        depths[k] = depth;
-        if (depth < near) near = depth;
-        if (depth > far) far = depth;
+        const p = project(coords[i], coords[j], vertexZ[k]);
+        screenX[k] = p.x;
+        screenY[k] = p.y;
+        depths[k] = p.depth;
+        if (p.depth < near) near = p.depth;
+        if (p.depth > far) far = p.depth;
       }
     }
 
-    const bands = Array.from({ length: FOG_BANDS }, () => new Path2D());
+    const bands = [];
+    for (let b = 0; b < FOG_BANDS; b += 1) bands.push(new Path2D());
+    const bandScale = FOG_BANDS / (far - near || 1);
     const bandOf = (a, b) =>
-      Math.min(FOG_BANDS - 1, Math.floor((((depths[a] + depths[b]) / 2 - near) / (far - near || 1)) * FOG_BANDS));
+      Math.min(FOG_BANDS - 1, Math.floor(((depths[a] + depths[b]) / 2 - near) * bandScale));
 
     for (let j = 0; j < GRID; j += 1) {
       for (let i = 0; i < GRID; i += 1) {
@@ -387,12 +409,11 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
     }
 
     ctx.lineWidth = 1;
-    bands.forEach((path, index) => {
+    for (let b = 0; b < FOG_BANDS; b += 1) {
       // Nearest band strongest, fading with distance.
-      const alpha = 0.32 - (index / (FOG_BANDS - 1)) * 0.29;
-      ctx.strokeStyle = `rgba(196, 154, 92, ${alpha.toFixed(3)})`;
-      ctx.stroke(path);
-    });
+      ctx.strokeStyle = BAND_STYLES[b];
+      ctx.stroke(bands[b]);
+    }
   }
 
   function startRun(run, wait) {
@@ -437,21 +458,34 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
 
   function drawRuns() {
     ctx.lineCap = "round";
+    ctx.lineJoin = "round";
 
     runs.forEach((run, index) => {
       if (run.step === 0) return;
-      const points = run.trail.map(([u, v, z]) => project(u, v, z + 0.01));
+      const trail = run.trail;
+      const last = trail.length - 1;
 
+      // Older steps fade out. The trail is split into a few bands of rising
+      // opacity and each band is a single stroke.
       ctx.lineWidth = 1.6;
-      for (let p = 1; p < points.length; p += 1) {
-        ctx.strokeStyle = `rgba(237, 226, 207, ${((p / points.length) * 0.85).toFixed(3)})`;
+      for (let b = 0; b < TRAIL_BANDS; b += 1) {
+        const start = Math.floor((b * last) / TRAIL_BANDS);
+        const end = Math.floor(((b + 1) * last) / TRAIL_BANDS);
+        if (end <= start) continue;
+
+        ctx.strokeStyle = TRAIL_STYLES[b];
         ctx.beginPath();
-        ctx.moveTo(points[p - 1][0], points[p - 1][1]);
-        ctx.lineTo(points[p][0], points[p][1]);
+        for (let p = start; p <= end; p += 1) {
+          const q = project(trail[p][0], trail[p][1], trail[p][2] + 0.01);
+          if (p === start) ctx.moveTo(q.x, q.y);
+          else ctx.lineTo(q.x, q.y);
+        }
         ctx.stroke();
       }
 
-      const [hx, hy] = points[points.length - 1];
+      const head = project(trail[last][0], trail[last][1], trail[last][2] + 0.01);
+      const hx = head.x;
+      const hy = head.y;
       ctx.fillStyle = "#ede2cf";
       ctx.beginPath();
       ctx.arc(hx, hy, 2.6, 0, Math.PI * 2);
@@ -483,6 +517,16 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
     ctx.clearRect(0, 0, width, height);
     drawSurface();
     drawRuns();
+
+    // Fade out toward the copy on the left. This is done on the canvas
+    // because a CSS mask over a canvas that redraws every frame is costly
+    // to composite.
+    if (fade) {
+      ctx.globalCompositeOperation = "destination-in";
+      ctx.fillStyle = fade;
+      ctx.fillRect(0, 0, width, height);
+      ctx.globalCompositeOperation = "source-over";
+    }
   }
 
   function frame(now) {
@@ -500,7 +544,7 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
   }
 
   function resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
     width = window.innerWidth;
     height = window.innerHeight;
     // A frame that hasn't been laid out yet reports 0x0; resize tries again.
@@ -514,6 +558,17 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
     focal = height * 1.19;
     centerX = width * (width > 900 ? 0.6 : 0.5);
     centerY = height * 0.54;
+
+    // Desktop copy is left-aligned, so the surface fades out toward it.
+    // Narrow screens dim the whole canvas in CSS instead.
+    if (width > 900) {
+      fade = ctx.createLinearGradient(0, 0, width, 0);
+      fade.addColorStop(0, "rgba(0, 0, 0, 0.22)");
+      fade.addColorStop(0.4, "rgba(0, 0, 0, 0.35)");
+      fade.addColorStop(0.85, "rgba(0, 0, 0, 1)");
+    } else {
+      fade = null;
+    }
   }
 
   makeSurface();

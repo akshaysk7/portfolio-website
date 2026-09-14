@@ -55,7 +55,6 @@ body {
   line-height: 1.68;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
 }
 
 a { color: inherit; text-decoration: none; }
@@ -115,21 +114,17 @@ ul { margin: 0; padding: 0; list-style: none; }
 
 /* ---------------- background: 3D loss surface ---------------- */
 /* A slowly turning wireframe of a loss surface with gradient-descent runs
-   rolling into its valleys, drawn in script.js. The copy is left-aligned
-   and the surface sits right of centre, so it fades out toward the left. */
+   rolling into its valleys, drawn in script.js. On desktop the script fades
+   it out toward the left-aligned copy. */
 
 .landscape {
   position: fixed; inset: 0; z-index: -1;
   width: 100%; height: 100%;
   pointer-events: none;
-  mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.22) 0%,
-                              rgba(0, 0, 0, 0.35) 40%, #000 85%);
-  -webkit-mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0.22) 0%,
-                                      rgba(0, 0, 0, 0.35) 40%, #000 85%);
 }
 /* On narrow screens the copy spans the full width, so dim it evenly. */
 @media (max-width: 900px) {
-  .landscape { mask-image: none; -webkit-mask-image: none; opacity: 0.4; }
+  .landscape { opacity: 0.4; }
 }
 
 /* ---------------- header ---------------- */
@@ -150,11 +145,11 @@ ul { margin: 0; padding: 0; list-style: none; }
   opacity: 0;
   transition: opacity 0.4s var(--ease);
 }
+/* A near-solid bar rather than a backdrop blur: blurring the animated
+   background behind the header on every frame is expensive. */
 .site-header.is-stuck {
   padding-top: 13px; padding-bottom: 13px;
-  background: rgba(27, 22, 18, 0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(27, 22, 18, 0.96);
 }
 .site-header.is-stuck::after { opacity: 1; }
 
