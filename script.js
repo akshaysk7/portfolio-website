@@ -107,8 +107,15 @@ if (prefersReducedMotion || !("IntersectionObserver" in window)) {
     (entries) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
-        entry.target.classList.add("is-visible");
-        revealObserver.unobserve(entry.target);
+        const element = entry.target;
+        element.classList.add("is-visible");
+        revealObserver.unobserve(element);
+
+        // Once it has risen in (the transition takes 0.9s), drop the reveal
+        // classes so the element carries no transform and hover effects can
+        // use their own. A timer, because transitionend never fires if the
+        // page isn't rendering at the time.
+        window.setTimeout(() => element.classList.remove("reveal", "is-visible"), 1000);
       });
     },
     { threshold: 0.12, rootMargin: "0px 0px -8% 0px" }
@@ -270,8 +277,6 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
   const MOMENTUM = 0.9;
   const NOISE = 0.0008;
 
-  const COS_P = Math.cos(PITCH);
-  const SIN_P = Math.sin(PITCH);
   const vertexCount = GRID * GRID;
   const coords = Float32Array.from({ length: GRID }, (_, i) => (i / (GRID - 1)) * 2 * EXTENT - EXTENT);
   const vertexZ = new Float32Array(vertexCount);
@@ -297,6 +302,13 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
   let yaw = 0.6;
   let cosYaw = 1;
   let sinYaw = 0;
+  // The camera orbits a little toward the pointer and tilts with scroll.
+  let yawOffset = 0;
+  let pitch = PITCH;
+  let cosPitch = Math.cos(PITCH);
+  let sinPitch = Math.sin(PITCH);
+  let pointerX = 0.5; // 0..1 across the viewport
+  let pointerY = 0.5;
   let wells = [];
   let low = 0;
   let high = 1;
@@ -362,8 +374,8 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
   function project(u, v, z) {
     const x = u * cosYaw - v * sinYaw;
     const y = u * sinYaw + v * cosYaw;
-    const depth = DISTANCE + y * COS_P - z * SIN_P;
-    const up = y * SIN_P + z * COS_P;
+    const depth = DISTANCE + y * cosPitch - z * sinPitch;
+    const up = y * sinPitch + z * cosPitch;
     projected.x = centerX + (focal * x) / depth;
     projected.y = centerY - (focal * up) / depth;
     projected.depth = depth;
@@ -512,8 +524,10 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
 
   function render() {
     if (!width || !height) return;
-    cosYaw = Math.cos(yaw);
-    sinYaw = Math.sin(yaw);
+    cosYaw = Math.cos(yaw + yawOffset);
+    sinYaw = Math.sin(yaw + yawOffset);
+    cosPitch = Math.cos(pitch);
+    sinPitch = Math.sin(pitch);
     ctx.clearRect(0, 0, width, height);
     drawSurface();
     drawRuns();
@@ -535,6 +549,12 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
     const elapsed = lastFrame ? Math.min(now - lastFrame, 100) : FRAME_MS;
     lastFrame = now;
     yaw += (SPIN * elapsed) / 1000;
+
+    // Ease the camera toward the pointer (a small orbit, like dragging a 3D
+    // plot) and look further down onto the surface as the page scrolls.
+    const scrollTilt = Math.min(window.scrollY / 2400, 1) * 0.14;
+    yawOffset += ((pointerX - 0.5) * 0.5 - yawOffset) * 0.08;
+    pitch += (PITCH + (pointerY - 0.5) * 0.1 + scrollTilt - pitch) * 0.08;
 
     if (now - lastStep >= STEP_MS) {
       lastStep = now;
@@ -589,6 +609,24 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
   } else {
     rafId = window.requestAnimationFrame(frame);
 
+    // Mouse and trackpad users steer the camera; touch screens keep the
+    // plain slow turn. The handler only records where the pointer is.
+    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+      window.addEventListener(
+        "pointermove",
+        (event) => {
+          if (!width || !height) return;
+          pointerX = event.clientX / width;
+          pointerY = event.clientY / height;
+        },
+        { passive: true }
+      );
+      document.documentElement.addEventListener("pointerleave", () => {
+        pointerX = 0.5;
+        pointerY = 0.5;
+      });
+    }
+
     document.addEventListener("visibilitychange", () => {
       if (document.hidden && rafId !== null) {
         window.cancelAnimationFrame(rafId);
@@ -627,5 +665,42 @@ if (terminalWindow && !prefersReducedMotion && window.matchMedia("(hover: hover)
 
   terminalWindow.addEventListener("pointerleave", () => {
     terminalWindow.style.rotate = "";
+  });
+}
+
+/* ---------- project card tilt ----------
+   Project cards lean toward the pointer in 3D with a soft light following
+   it (see .tilt in styles.css). Mouse and trackpad only, never with reduced
+   motion. Browsers deliver pointermove at most once per frame, and each
+   event just writes four custom properties. */
+
+if (!prefersReducedMotion && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+  document.querySelectorAll(".tilt").forEach((card) => {
+    let rect = null;
+
+    card.addEventListener("pointerenter", () => {
+      rect = card.getBoundingClientRect();
+      card.classList.add("is-tilting");
+    });
+
+    card.addEventListener("pointermove", (event) => {
+      if (!rect) rect = card.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      card.style.setProperty("--ry", `${((x / rect.width - 0.5) * 6).toFixed(2)}deg`);
+      card.style.setProperty("--rx", `${((0.5 - y / rect.height) * 6).toFixed(2)}deg`);
+      card.style.setProperty("--mx", `${Math.round(x)}px`);
+      card.style.setProperty("--my", `${Math.round(y)}px`);
+    });
+
+    card.addEventListener("pointerleave", () => {
+      rect = null;
+      card.classList.remove("is-tilting");
+      card.style.setProperty("--rx", "0deg");
+      card.style.setProperty("--ry", "0deg");
+    });
+
+    // Scrolling moves the card under a still pointer, so measure again.
+    window.addEventListener("scroll", () => { rect = null; }, { passive: true });
   });
 }

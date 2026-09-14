@@ -509,6 +509,8 @@ main { display: block; }
 /* ---------------- projects ---------------- */
 
 .project {
+  position: relative;
+  overflow: hidden;
   padding: clamp(28px, 4vw, 48px);
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -519,6 +521,30 @@ main { display: block; }
   background: var(--panel-strong);
   border-color: var(--line-strong);
 }
+
+/* On hover a project card leans toward the pointer in 3D and a soft gold
+   light follows the pointer across it. script.js sets --rx, --ry, --mx and
+   --my, for mouse and trackpad users only. At rest there is no transform. */
+.tilt { transition: transform 0.6s var(--ease), border-color 0.4s var(--ease); }
+.tilt.is-tilting {
+  transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.15s linear, border-color 0.4s var(--ease);
+  border-color: var(--line-strong);
+}
+.tilt::before {
+  content: "";
+  position: absolute; left: 0; top: 0;
+  width: 560px; height: 560px;
+  margin: -280px 0 0 -280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(212, 172, 110, 0.1), transparent 62%);
+  translate: var(--mx, 50%) var(--my, 50%);
+  opacity: 0;
+  transition: opacity 0.5s var(--ease);
+  pointer-events: none;
+}
+.tilt.is-tilting::before { opacity: 1; }
+.tilt > * { position: relative; }
 
 .project-head {
   display: flex; align-items: flex-start; justify-content: space-between;
@@ -593,6 +619,21 @@ main { display: block; }
 .shipped-card p { color: var(--body); font-size: 1rem; margin: 0; }
 .shipped-card .link-arrow { margin-top: auto; align-self: flex-start; }
 
+/* Hovering an entry draws a gold rule across its top edge. */
+.track-card,
+.shipped-card { position: relative; }
+.track-card::before,
+.shipped-card::before {
+  content: "";
+  position: absolute; left: 0; right: 0; top: -1px;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.7s var(--ease);
+}
+.track-card:hover::before,
+.shipped-card:hover::before { transform: scaleX(1); }
+
 /* ---------------- timeline ---------------- */
 
 .timeline { position: relative; padding-left: 32px; }
@@ -641,9 +682,17 @@ main { display: block; }
   display: flex; flex-direction: column; gap: 4px;
   padding: 20px 40px 20px 0;
   border-bottom: 1px solid var(--line);
-  transition: border-color 0.3s var(--ease);
 }
-.contact-link:hover { border-bottom-color: var(--accent); }
+/* the row's rule draws across in gold on hover */
+.contact-link::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: -1px;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.6s var(--ease);
+}
+.contact-link:hover::after { transform: scaleX(1); }
 .contact-link span {
   font-family: var(--mono);
   font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase;
@@ -683,9 +732,12 @@ main { display: block; }
 
 /* ---------------- reveal ---------------- */
 
+/* Sections rise in with a slight 3D tilt. script.js removes these classes
+   once the transition ends, so revealed content carries no transform. */
 .reveal {
   opacity: 0;
-  transform: translateY(18px);
+  transform: perspective(1000px) translateY(22px) rotateX(9deg);
+  transform-origin: 50% 0%;
   transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
 }
 .reveal.is-visible { opacity: 1; transform: none; }
@@ -752,6 +804,8 @@ main { display: block; }
     transition-duration: 0.001ms !important;
   }
   .reveal { opacity: 1; transform: none; }
+  .tilt.is-tilting { transform: none; }
+  .tilt::before { display: none; }
   .hero-title .word > * { transform: none; opacity: 1; }
   .brand-prompt i { opacity: 1; }
 }
