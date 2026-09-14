@@ -17,7 +17,7 @@ finished work.
 | --- | --- |
 | `index.html` | All page content |
 | `styles.css` | Styling, layout, animation, responsive rules |
-| `script.js` | Nav, scroll progress, reveal-on-scroll, kinetic headline, typed terminal |
+| `script.js` | Nav, scroll progress, 3D headline, reveal-on-scroll, typed terminal, 3D loss-surface background, terminal tilt |
 | `build_resume.py` | Generates `assets/resume.pdf` |
 | `assets/` | Monogram and the generated résumé |
 
@@ -46,13 +46,13 @@ Most edits are plain HTML in `index.html`:
 
 - **Current focus / status** — the `.status-pill` in the hero, and the `#now` section
 - **Learning tracks** — `.track-card` blocks; the `.chip` class sets the status label
-  (`chip-live` = green, `chip-next` = blue)
+  (`chip-live` = amber, `chip-next` = grey)
 - **Projects in progress** — `#building`
 - **Finished work** — `#shipped`
 - **Terminal animation** — the `TERMINAL_LINES` array in `script.js`
 
 ## Notes
 
-- Animation is gated behind `prefers-reduced-motion`, which disables the background orbs,
-  marquee, typing and reveal transitions.
+- Animation is gated behind `prefers-reduced-motion`, which disables the typing and reveal
+  transitions and shows the background as a single still frame.
 - The layout is responsive down to ~360px; the nav collapses to a menu below 780px.
