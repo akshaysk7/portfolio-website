@@ -721,7 +721,7 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
       // starts from the grid point nearest the click and takes over the
       // readout; the oldest run makes way once there are too many.
       document.addEventListener("click", (event) => {
-        if (!width || event.target.closest("a, button, .focus-card, .project, .contact-card")) return;
+        if (!width || event.target.closest("a, button, .hero-portrait, .focus-card, .project, .contact-card")) return;
         if (String(window.getSelection())) return;
 
         let nearest = -1;

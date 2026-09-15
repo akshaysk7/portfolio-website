@@ -327,7 +327,7 @@ main { display: block; }
 .pulse { width: 28px; height: 1px; background: var(--hi); flex: none; }
 
 .hero-title {
-  font-size: clamp(3rem, 8.6vw, 6.6rem);
+  font-size: clamp(3rem, 7vw, 5.6rem);
   font-weight: 300;
   line-height: 0.98;
   letter-spacing: -0.03em;
@@ -367,7 +367,6 @@ main { display: block; }
 .hero-actions {
   display: flex; flex-wrap: wrap; align-items: center;
   gap: 14px 30px;
-  margin-bottom: 64px;
 }
 
 .button {
@@ -391,6 +390,49 @@ main { display: block; }
   border-bottom-color: var(--line-strong);
 }
 .button-ghost:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* Copy on the left, portrait on the right. He looks to the left, into the
+   copy, and the photo's base lines up with the actions row. */
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: clamp(32px, 6vw, 80px);
+  margin-bottom: 64px;
+}
+
+.hero-portrait {
+  margin: 0;
+  width: clamp(240px, 26vw, 330px);
+  max-width: 100%;
+}
+.portrait-frame {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+.portrait-frame img {
+  display: block;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  /* Warm monochrome so the greens sit inside the palette; the real colour
+     comes back on hover. */
+  filter: grayscale(1) sepia(0.3) contrast(1.05) brightness(0.9);
+  transition: filter 0.8s var(--ease);
+}
+.portrait-frame:hover img { filter: none; }
+/* let the tilt's gold light pass over the photo */
+.portrait-frame::before { z-index: 1; }
+.hero-portrait figcaption {
+  margin-top: 12px;
+  font-family: var(--mono);
+  font-size: 0.7rem; letter-spacing: 0.08em;
+  color: var(--faint);
+}
 
 /* Facts as a ruled index rather than a row of tiles. */
 .hero-facts {
@@ -802,6 +844,9 @@ main { display: block; }
 }
 
 @media (max-width: 900px) {
+  /* stacked: the portrait follows the actions, before the facts */
+  .hero-grid { grid-template-columns: 1fr; align-items: start; gap: 44px; margin-bottom: 52px; }
+  .hero-portrait { width: min(64vw, 300px); }
   .focus-card { grid-template-columns: 1fr; }
   .terminal-body { min-height: 210px; }
 }
