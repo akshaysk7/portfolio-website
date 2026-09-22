@@ -348,6 +348,14 @@ const surfaceCanvas = document.getElementById("landscape");
 if (surfaceCanvas && surfaceCanvas.getContext) {
   const ctx = surfaceCanvas.getContext("2d");
 
+  // Colours come from the palette in styles.css, read once at startup.
+  const palette = getComputedStyle(document.documentElement);
+  const LINE_RGB = palette.getPropertyValue("--plot-line").trim() || "206, 138, 96";
+  const LINE_FAR_RGB = palette.getPropertyValue("--plot-line-far").trim() || LINE_RGB;
+  const TRAIL_RGB = palette.getPropertyValue("--plot-trail").trim() || "226, 230, 237";
+  const nearRGB = LINE_RGB.split(",").map(Number);
+  const farRGB = LINE_FAR_RGB.split(",").map(Number);
+
   const GRID = 34; // vertices per side
   const EXTENT = 2; // the surface spans -EXTENT..EXTENT world units
   const PITCH = 0.42; // camera elevation, radians
@@ -373,13 +381,16 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
   const depths = new Float32Array(vertexCount);
 
   // The colours never change, so build the stroke styles once, not per frame.
-  const BAND_STYLES = Array.from(
-    { length: FOG_BANDS },
-    (_, b) => `rgba(196, 154, 92, ${(0.32 - (b / (FOG_BANDS - 1)) * 0.29).toFixed(3)})`
-  );
+  // Bands run from the near colour to the far one, fading as they go, so a
+  // palette can send the far side of the surface into another colour.
+  const BAND_STYLES = Array.from({ length: FOG_BANDS }, (_, b) => {
+    const t = b / (FOG_BANDS - 1);
+    const rgb = nearRGB.map((c, i) => Math.round(c + (farRGB[i] - c) * t)).join(", ");
+    return `rgba(${rgb}, ${(0.32 - t * 0.26).toFixed(3)})`;
+  });
   const TRAIL_STYLES = Array.from(
     { length: TRAIL_BANDS },
-    (_, b) => `rgba(237, 226, 207, ${(((b + 1) / TRAIL_BANDS) * 0.85).toFixed(3)})`
+    (_, b) => `rgba(${TRAIL_RGB}, ${(((b + 1) / TRAIL_BANDS) * 0.85).toFixed(3)})`
   );
 
   let width = 0;
@@ -589,11 +600,11 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
       const head = project(trail[last][0], trail[last][1], trail[last][2] + 0.01);
       const hx = head.x;
       const hy = head.y;
-      ctx.fillStyle = "#ede2cf";
+      ctx.fillStyle = `rgba(${TRAIL_RGB}, 1)`;
       ctx.beginPath();
       ctx.arc(hx, hy, 2.6, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = "rgba(196, 154, 92, 0.9)";
+      ctx.strokeStyle = `rgba(${LINE_RGB}, 0.9)`;
       ctx.lineWidth = 1.2;
       ctx.beginPath();
       ctx.arc(hx, hy, 6.5, 0, Math.PI * 2);
@@ -603,7 +614,7 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
       if (index === 0) {
         const value = Math.max(0, (lossAt(run.u, run.v) - low) / (high - low || 1));
         ctx.font = '400 11px "IBM Plex Mono", ui-monospace, monospace';
-        ctx.fillStyle = "rgba(237, 226, 207, 0.7)";
+        ctx.fillStyle = `rgba(${TRAIL_RGB}, 0.7)`;
         ctx.fillText(
           `step ${String(run.step).padStart(3, "0")}  loss ${value.toFixed(3)}`,
           Math.min(hx + 14, width - 180),
