@@ -145,108 +145,899 @@ if ("IntersectionObserver" in window) {
   sections.forEach((section) => navObserver.observe(section));
 }
 
-/* ---------- typed terminal ---------- */
+/* ---------- palettes ----------
+   The palettes themselves are [data-theme] blocks in styles.css; this list
+   names them and gives each a swatch (ground, structure, live, action) for
+   the command palette and the terminal. */
 
-const typedCode = document.getElementById("typedCode");
-
-const TERMINAL_LINES = [
-  { text: "# rebuilding Python from the fundamentals", cls: "cmt" },
-  { text: ">>> import pandas as pd", cls: "prm" },
-  { text: ">>> matches = pd.read_csv('epl.csv')", cls: "prm" },
-  { text: ">>> matches['form'] = rolling_points(matches, n=5)", cls: "prm" },
-  { text: ">>> matches.groupby('result').size()", cls: "prm" },
-  { text: "H    1140", cls: "out" },
-  { text: "D     720", cls: "out" },
-  { text: "A     900", cls: "out" },
-  { text: "# next: engineer features that actually carry signal", cls: "cmt" }
+const THEMES = [
+  { id: "signal", name: "Signal", note: "black · blue · green · red", swatch: ["#05070a", "#4ea8ff", "#3fbf7f", "#ff4d4d"] },
+  { id: "nebula", name: "Nebula", note: "indigo · cyan · violet", swatch: ["#06070f", "#22d3ee", "#34d399", "#c084fc"] },
+  { id: "phosphor", name: "Phosphor", note: "CRT green · amber", swatch: ["#040806", "#39ff88", "#9dff6a", "#ffb000"] },
+  { id: "tokyo", name: "Tokyo Night", note: "navy · periwinkle · rose", swatch: ["#0d0e16", "#7aa2f7", "#9ece6a", "#ff7a93"] },
+  { id: "ember", name: "Ember", note: "charcoal · orange · crimson", swatch: ["#0b0706", "#ff8a3d", "#ffd166", "#ff3d57"] },
+  { id: "volt", name: "Volt", note: "black · lime · magenta", swatch: ["#070707", "#c6ff00", "#00e5ff", "#ff3cac"] },
+  { id: "arctic", name: "Arctic", note: "ice blue · mint · white", swatch: ["#060a10", "#9be7ff", "#5eead4", "#f8fafc"] },
+  { id: "solar", name: "Solar Gold", note: "gold · sage · flame", swatch: ["#0a0906", "#f5c542", "#8bd17c", "#ff6b35"] },
+  { id: "vapor", name: "Vaporwave", note: "pink · cyan · purple", swatch: ["#0c0717", "#ff71ce", "#01cdfe", "#b967ff"] },
+  // Theme Lab handoff: each brings its own fonts, which override any type pairing.
+  { id: "klein", name: "Klein Signal", note: "blue · cream · coral-red", fonts: "Chakra Petch · IBM Plex Mono", lab: true, swatch: ["#1c2bc9", "#ffa593", "#f2efe6", "#ff5b45"] },
+  { id: "bone", name: "Bone Print", note: "paper · ink · vermilion", fonts: "Chakra Petch · JetBrains Mono", lab: true, swatch: ["#e7e2d6", "#1c1a17", "#645d53", "#b8221a"] },
+  { id: "oxblood", name: "Oxblood", note: "wine · cream · salmon", fonts: "Tomorrow · Space Mono", lab: true, swatch: ["#2a1013", "#f0e2cf", "#e6c8ad", "#f08a74"] },
+  { id: "lilac", name: "Lilac Lab", note: "lilac · indigo · red", fonts: "Oxanium · Kode Mono", lab: true, swatch: ["#dcd5ec", "#3a2ec4", "#d93a2b", "#1d1638"] },
+  { id: "plum", name: "Plum & Sky", note: "plum · powder blue · orchid", fonts: "Rajdhani · Share Tech Mono", lab: true, swatch: ["#23152b", "#9ec5ff", "#d8b4e8", "#efe6f0"] },
+  { id: "steel", name: "Steel Cobalt", note: "steel grey · cobalt", fonts: "Chakra Petch · Saira · IBM Plex Mono", lab: true, swatch: ["#c4cbd3", "#1740d6", "#0f141b", "#46505e"] }
 ];
 
-// Like a real REPL, the ">>> " prompt appears whole; only the code is typed.
-const PROMPT = ">>> ";
+/* ---------- type pairings ----------
+   [data-font] blocks in styles.css; the web fonts themselves are fetched by
+   loadFontCSS (in the <head> script) the first time a pairing is used. */
 
-function promptSpan() {
-  const span = document.createElement("span");
-  span.className = "pp";
-  span.textContent = PROMPT;
-  return span;
+const FONTS = [
+  { id: "editorial", name: "Newsreader", note: "serif · IBM Plex Mono" },
+  { id: "inter", name: "Inter Tight", note: "Inter · JetBrains Mono" },
+  { id: "grotesk", name: "Space Grotesk", note: "Inter · JetBrains Mono" },
+  { id: "sora", name: "Sora", note: "Sora · IBM Plex Mono" },
+  { id: "syne", name: "Syne", note: "Manrope · Space Mono" },
+  { id: "chakra", name: "Chakra Petch", note: "IBM Plex Sans · Share Tech Mono" },
+  { id: "outfit", name: "Outfit", note: "Outfit · DM Mono" }
+];
+
+// Looks: a type pairing with the palettes that suit it.
+const LOOKS = [
+  // Theme Lab themes set their own fonts, so these clear any type pairing.
+  { font: "editorial", theme: "klein", mood: "Theme Lab" },
+  { font: "editorial", theme: "bone", mood: "Theme Lab, light" },
+  { font: "editorial", theme: "oxblood", mood: "Theme Lab" },
+  { font: "editorial", theme: "lilac", mood: "Theme Lab, light" },
+  { font: "editorial", theme: "plum", mood: "Theme Lab" },
+  { font: "editorial", theme: "steel", mood: "Theme Lab, light" },
+  { font: "inter", theme: "signal", mood: "professional" },
+  { font: "inter", theme: "tokyo", mood: "professional, softer" },
+  { font: "grotesk", theme: "nebula", mood: "futuristic" },
+  { font: "grotesk", theme: "volt", mood: "futuristic, loud" },
+  { font: "sora", theme: "arctic", mood: "clean and calm" },
+  { font: "sora", theme: "nebula", mood: "clean, a little sci-fi" },
+  { font: "syne", theme: "volt", mood: "bold" },
+  { font: "syne", theme: "vapor", mood: "bold, playful" },
+  { font: "chakra", theme: "phosphor", mood: "sci-fi HUD" },
+  { font: "chakra", theme: "arctic", mood: "sci-fi, cooler" },
+  { font: "outfit", theme: "ember", mood: "warm modern" },
+  { font: "outfit", theme: "solar", mood: "warm, golden" },
+  { font: "editorial", theme: "signal", mood: "the original" }
+];
+
+const root = document.documentElement;
+const themeMeta = document.querySelector('meta[name="theme-color"]');
+const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+function currentTheme() {
+  return THEMES.find((theme) => theme.id === root.dataset.theme) || THEMES[0];
 }
 
-function runTerminal() {
-  if (!typedCode) return;
+// The cursors are SVG images and can't read CSS variables, so they are
+// redrawn in the palette's colours whenever it changes.
+function paintCursors() {
+  if (!finePointer) return;
+  const style = getComputedStyle(root);
+  const accent = style.getPropertyValue("--accent").trim();
+  const bg = style.getPropertyValue("--bg").trim();
+  const text = style.getPropertyValue("--text").trim();
+  const image = (body) =>
+    `url("data:image/svg+xml,${encodeURIComponent(
+      `<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'>${body}</svg>`
+    )}") 16 16`;
+  const cross = "M16 4v7M16 21v7M4 16h7M21 16h7";
+  const ticks = "M16 1v5M16 26v5M1 16h5M26 16h5";
+  const probe =
+    `<path d='${cross}' stroke='${bg}' stroke-opacity='.7' stroke-width='3' stroke-linecap='round'/>` +
+    `<path d='${cross}' stroke='${accent}' stroke-width='1.25' stroke-linecap='round'/>` +
+    `<circle cx='16' cy='16' r='2' fill='${text}' stroke='${bg}' stroke-width='1'/>`;
+  const link =
+    `<circle cx='16' cy='16' r='10' fill='${accent}' fill-opacity='.14' stroke='${bg}' stroke-opacity='.7' stroke-width='3'/>` +
+    `<circle cx='16' cy='16' r='10' fill='none' stroke='${accent}' stroke-width='1.25'/>` +
+    `<path d='${ticks}' stroke='${bg}' stroke-opacity='.7' stroke-width='3' stroke-linecap='round'/>` +
+    `<path d='${ticks}' stroke='${accent}' stroke-width='1.25' stroke-linecap='round'/>` +
+    `<circle cx='16' cy='16' r='2' fill='${text}'/>`;
+  root.style.setProperty("--cursor-probe", `${image(probe)}, crosshair`);
+  root.style.setProperty("--cursor-link", `${image(link)}, pointer`);
+}
 
-  if (prefersReducedMotion) {
-    TERMINAL_LINES.forEach((line) => {
+function applyTheme(id, { announce = false } = {}) {
+  const theme = THEMES.find((entry) => entry.id === id);
+  if (!theme) return null;
+
+  if (theme.id === "signal") delete root.dataset.theme;
+  else root.dataset.theme = theme.id;
+  try {
+    localStorage.setItem("theme", theme.id);
+  } catch (error) {
+    // private mode or blocked storage: the palette just won't be remembered
+  }
+
+  if (theme.lab) window.loadFontCSS?.("lab");
+  themeMeta?.setAttribute("content", theme.swatch[0]);
+  paintCursors();
+  document.dispatchEvent(new CustomEvent("themechange"));
+  if (announce) showToast(`Palette → ${theme.name}`);
+  return theme;
+}
+
+themeMeta?.setAttribute("content", currentTheme().swatch[0]);
+if (currentTheme().id !== "signal") paintCursors();
+
+function currentFont() {
+  return FONTS.find((font) => font.id === root.dataset.font) || FONTS[0];
+}
+
+function applyFont(id, { announce = false } = {}) {
+  const font = FONTS.find((entry) => entry.id === id);
+  if (!font) return null;
+
+  window.loadFontCSS?.(font.id);
+  if (font.id === "editorial") delete root.dataset.font;
+  else root.dataset.font = font.id;
+  try {
+    localStorage.setItem("font", font.id);
+  } catch (error) {
+    // not remembered, that's all
+  }
+
+  document.dispatchEvent(new CustomEvent("themechange"));
+  if (announce) showToast(`Type → ${font.name}`);
+  return font;
+}
+
+// A Theme Lab theme carries its own fonts, so it goes by its own name.
+const lookName = (look) => {
+  const theme = THEMES.find((t) => t.id === look.theme);
+  return theme.lab ? theme.name : `${FONTS.find((f) => f.id === look.font).name} × ${theme.name}`;
+};
+
+function applyLook(index, { announce = false } = {}) {
+  const look = LOOKS[index];
+  if (!look) return null;
+  applyFont(look.font);
+  applyTheme(look.theme);
+  if (announce) showToast(`Look → ${lookName(look)}`);
+  document.dispatchEvent(new CustomEvent("lookchange", { detail: index }));
+  return look;
+}
+
+/* ---------- toast + copy ---------- */
+
+const toast = document.getElementById("toast");
+let toastTimer = null;
+
+function showToast(message) {
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.add("is-shown");
+  window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => toast.classList.remove("is-shown"), 2200);
+}
+
+const EMAIL = "akshaysk2007@gmail.com";
+const GITHUB = "https://github.com/akshaysk7";
+const LINKEDIN = "https://www.linkedin.com/in/akshay-s-krishnan-1968092a7/";
+
+async function copyText(text, label) {
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast(`${label} copied`);
+  } catch (error) {
+    // No clipboard access (old browser, insecure origin): show it instead.
+    showToast(text);
+  }
+}
+
+document.querySelectorAll("[data-copy]").forEach((button) => {
+  button.addEventListener("click", () => copyText(button.dataset.copy, "Email address"));
+});
+
+function goTo(id) {
+  document.getElementById(id)?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" });
+}
+
+/* ---------- boot sequence ----------
+   A short start-up log, once per visit. The <head> script decides whether
+   it plays (it never does with reduced motion) and covers the page until
+   this takes over. Any key or click skips it. */
+
+if (root.classList.contains("is-booting")) {
+  const BOOT_LINES = [
+    [["pp", ">>> "], ["", "import akshay"]],
+    [["dim", "loading projects .... "], ["ok", "2 in progress"]],
+    [["dim", "loading shipped ..... "], ["ok", "2 running"]],
+    [["dim", "loading now() ....... "], ["ok", "python · dsa · ml"]],
+    [["pp", ">>> "], ["", "akshay.render()"]]
+  ];
+
+  const boot = document.createElement("div");
+  boot.className = "boot";
+  boot.setAttribute("aria-hidden", "true");
+  const frame = document.createElement("div");
+  const log = document.createElement("pre");
+  const bar = document.createElement("span");
+  bar.className = "boot-bar";
+  frame.append(log, bar);
+  boot.append(frame);
+  document.body.append(boot);
+
+  let line = 0;
+  let timer = null;
+  let finished = false;
+
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    window.clearTimeout(timer);
+    try {
+      sessionStorage.setItem("booted", "1");
+    } catch (error) {
+      // it will simply play again next time
+    }
+    root.classList.remove("is-booting");
+    boot.classList.add("is-done");
+    window.setTimeout(() => boot.remove(), 700);
+    window.removeEventListener("keydown", finish);
+    window.removeEventListener("pointerdown", finish);
+  };
+
+  const step = () => {
+    BOOT_LINES[line].forEach(([cls, text]) => {
       const span = document.createElement("span");
-      span.className = line.cls;
-      if (line.cls === "prm") typedCode.appendChild(promptSpan());
-      span.textContent = line.cls === "prm" ? line.text.slice(PROMPT.length) : line.text;
-      typedCode.appendChild(span);
-      typedCode.appendChild(document.createTextNode("\n"));
+      if (cls) span.className = cls;
+      span.textContent = text;
+      log.append(span);
     });
+    log.append("\n");
+    line += 1;
+    bar.style.setProperty("--p", String(line / BOOT_LINES.length));
+    timer = window.setTimeout(line < BOOT_LINES.length ? step : finish, line < BOOT_LINES.length ? 230 : 420);
+  };
+
+  window.addEventListener("keydown", finish);
+  window.addEventListener("pointerdown", finish);
+  timer = window.setTimeout(step, 120);
+}
+
+/* ---------- interactive terminal ----------
+   A small Python-flavoured REPL. It types akshay.now() by itself when it
+   first scrolls into view; after that visitors can type, or click one of
+   the suggested commands underneath. Output is built from DOM nodes, never
+   from HTML strings, so nothing typed into it is ever parsed as markup. */
+
+const replBody = document.getElementById("replBody");
+const replOut = document.getElementById("replOut");
+const replForm = document.getElementById("replForm");
+const replInput = document.getElementById("replInput");
+
+// One output line. Parts are plain strings or { text, cls, href }.
+function print(content = "", cls = "") {
+  const line = document.createElement("div");
+  if (cls) line.className = cls;
+  (Array.isArray(content) ? content : [content]).forEach((part) => {
+    if (typeof part === "string") {
+      line.append(part);
+      return;
+    }
+    const node = document.createElement(part.href ? "a" : "span");
+    node.textContent = part.text;
+    if (part.cls) node.className = part.cls;
+    if (part.href) {
+      node.href = part.href;
+      if (!part.href.startsWith("#") && !part.href.startsWith("mailto:")) {
+        node.target = "_blank";
+        node.rel = "noreferrer";
+      }
+    }
+    line.append(node);
+  });
+  replOut.append(line);
+  replBody.scrollTop = replBody.scrollHeight;
+}
+
+const key = (text) => ({ text, cls: "key" });
+const str = (text) => ({ text: `'${text}'`, cls: "out" });
+const comment = (text) => print(`# ${text}`, "cmt");
+
+const REPL_COMMANDS = {
+  help() {
+    print("available commands:", "out");
+    [
+      ["akshay.now()", "what I'm on right now"],
+      ["projects()", "building and shipped"],
+      ["stack()", "tools, and where each is used"],
+      ["contact()", "ways to reach me"],
+      ["resume()", "the PDF"],
+      ["themes()", "colour palettes for this site"],
+      ['theme("volt")', "switch palette"],
+      ["fonts()", "type pairings"],
+      ["looks()", "type + palette combos"],
+      ["whoami()", "the short version"],
+      ["clear()", "clear the screen"]
+    ].forEach(([command, what]) => print(["  ", key(command.padEnd(15)), " ", what]));
+    comment("plain arithmetic works too, like a real REPL");
+  },
+
+  now() {
+    print("{");
+    print(["  ", key("'building'"), ": ", str("Premier League match predictor (feature engineering)"), ","]);
+    print(["  ", key("'learning'"), ": ", str("DSA in Python (arrays, daily)"), ","]);
+    print(["  ", key("'next'"), ":     ", str("Django (Dev to Deployment)"), ","]);
+    print(["  ", key("'studying'"), ": [", str("OS"), ", ", str("COA"), ", ", str("DSA"), "],"]);
+    print("}");
+  },
+
+  projects() {
+    print(["[", { text: "building", cls: "out" }, "] ", { text: "Premier League Match Predictor", href: "#pl-predictor" }, "  feature engineering"]);
+    print(["[", { text: "building", cls: "out" }, "] ", { text: "College Document Q&A (RAG)", href: "#rag" }, "      team project"]);
+    print(["[", { text: "shipped", cls: "key" }, "]  ", { text: "Telegram scheduler bot", href: "#scheduler-bot" }, "          posts twice a week"]);
+    print(["[", { text: "shipped", cls: "key" }, "]  ", { text: "This portfolio", href: "#this-site" }, "                  you're in it"]);
+  },
+
+  stack() {
+    print([key("using   "), " → Python, pandas, scikit-learn, embeddings, vector DB, LLM APIs, Telegram Bot API"]);
+    print([key("learning"), " → DSA in Python, ML by building, HTML/CSS/JS"]);
+    print([key("next    "), " → Django"]);
+    comment("no percentage bars. see the Now section for where each is used");
+  },
+
+  contact() {
+    print([key("email   "), "  ", { text: EMAIL, href: `mailto:${EMAIL}` }]);
+    print([key("github  "), "  ", { text: "github.com/akshaysk7", href: GITHUB }]);
+    print([key("linkedin"), "  ", { text: "Akshay S Krishnan", href: LINKEDIN }]);
+  },
+
+  resume() {
+    print(["→ ", { text: "assets/resume.pdf", href: "assets/resume.pdf" }]);
+  },
+
+  themes() {
+    const active = currentTheme().id;
+    THEMES.forEach((theme) =>
+      print([theme.id === active ? "* " : "  ", key(`"${theme.id}"`.padEnd(11)), " ", theme.note])
+    );
+    comment('switch with theme("name"), or press Ctrl K');
+  },
+
+  fonts() {
+    const active = currentFont().id;
+    FONTS.forEach((font) =>
+      print([font.id === active ? "* " : "  ", key(`"${font.id}"`.padEnd(12)), " ", `${font.name} · ${font.note}`])
+    );
+    comment('switch with font("sora"), or try looks()');
+  },
+
+  looks() {
+    LOOKS.forEach((look, index) => print([key(String(index + 1).padStart(2)), "  ", lookName(look), "  ", { text: look.mood, cls: "cmt" }]));
+    comment("open the switcher with look(), or look(3) for one");
+  },
+
+  look() {
+    openDock();
+    print("look switcher open, bottom right. ← → to step", "out");
+  },
+
+  whoami() {
+    print("Akshay S Krishnan: 2nd year B.Tech CSE (AI & ML), SRM Ramapuram, Chennai. Python first.", "out");
+  },
+
+  akshay() {
+    print(["<Student ", str("Akshay S Krishnan"), " focus=", str("Python"), " status=", str("building"), ">"]);
+  },
+
+  ls() {
+    ["building", "shipped", "now", "education", "contact"].forEach((id) =>
+      print([{ text: `${id}/`, href: `#${id}` }])
+    );
+  },
+
+  "import this"() {
+    print("The Zen of Python, by Tim Peters", "out");
+    print("Beautiful is better than ugly.");
+    print("Explicit is better than implicit.");
+    print("Simple is better than complex.");
+    comment("...the other sixteen are in your own interpreter");
+  },
+
+  hire() {
+    print("[sudo] permission granted. opening contact()...", "out");
+    REPL_COMMANDS.contact();
+    window.setTimeout(() => goTo("contact"), 900);
+  },
+
+  exit() {
+    print("Use contact() instead. I'd rather you stayed.", "out");
+  },
+
+  python() {
+    print("You're already in it.", "out");
+  },
+
+  clear() {
+    replOut.textContent = "";
+  }
+};
+
+const REPL_ALIASES = {
+  quit: "exit",
+  cls: "clear",
+  python3: "python",
+  "sudo hire akshay": "hire",
+  "hire akshay": "hire",
+  "akshay.whoami": "whoami"
+};
+
+function formatNumber(value) {
+  return Number.isInteger(value) ? String(value) : String(parseFloat(value.toPrecision(12)));
+}
+
+function runCommand(raw) {
+  const input = raw.trim();
+  print([{ text: ">>> ", cls: "pp" }, input]);
+  if (!input) return;
+
+  const printCall = input.match(/^print\(\s*(["'])(.*)\1\s*\)$/);
+  if (printCall) {
+    print(printCall[2]);
     return;
   }
 
-  let lineIndex = 0;
-  let charIndex = 0;
-  let current = null;
-
-  function tick() {
-    if (lineIndex >= TERMINAL_LINES.length) {
-      // Hold the finished output, then start over.
-      window.setTimeout(() => {
-        typedCode.textContent = "";
-        lineIndex = 0;
-        charIndex = 0;
-        current = null;
-        tick();
-      }, 4200);
-      return;
-    }
-
-    const line = TERMINAL_LINES[lineIndex];
-
-    if (!current) {
-      if (line.cls === "prm") {
-        typedCode.appendChild(promptSpan());
-        charIndex = PROMPT.length;
-      }
-      current = document.createElement("span");
-      current.className = line.cls;
-      typedCode.appendChild(current);
-    }
-
-    if (charIndex < line.text.length) {
-      current.textContent += line.text.charAt(charIndex);
-      charIndex += 1;
-      window.setTimeout(tick, line.cls === "out" ? 14 : 26);
-      return;
-    }
-
-    typedCode.appendChild(document.createTextNode("\n"));
-    lineIndex += 1;
-    charIndex = 0;
-    current = null;
-    window.setTimeout(tick, line.cls === "out" ? 90 : 380);
+  const themeCall = input.match(/^theme\(\s*["']?([\w-]+)["']?\s*\)$/i) || input.match(/^theme\s+([\w-]+)$/i);
+  if (themeCall) {
+    const theme = applyTheme(themeCall[1].toLowerCase());
+    if (theme) print(`palette → ${theme.name} (${theme.note})`, "out");
+    else print(`ValueError: no palette called '${themeCall[1]}'. Try themes()`, "err");
+    return;
   }
 
-  tick();
+  const fontCall = input.match(/^font\(\s*["']?([\w-]+)["']?\s*\)$/i) || input.match(/^font\s+([\w-]+)$/i);
+  if (fontCall) {
+    const font = applyFont(fontCall[1].toLowerCase());
+    if (font) print(`type → ${font.name} (${font.note})`, "out");
+    else print(`ValueError: no font called '${fontCall[1]}'. Try fonts()`, "err");
+    return;
+  }
+
+  const lookCall = input.match(/^look\(\s*(\d+)\s*\)$/i);
+  if (lookCall) {
+    const index = Number(lookCall[1]) - 1;
+    if (applyLook(index)) print(`look → ${lookName(LOOKS[index])}`, "out");
+    else print(`IndexError: looks run from 1 to ${LOOKS.length}`, "err");
+    return;
+  }
+
+  // Arithmetic: digits and operators only, so this can't run anything else.
+  if (/^[\d\s+\-*/().%]+$/.test(input) && /\d/.test(input)) {
+    try {
+      const value = Function(`"use strict"; return (${input});`)();
+      if (typeof value !== "number" || Number.isNaN(value)) throw new SyntaxError();
+      if (!Number.isFinite(value)) print("ZeroDivisionError: division by zero", "err");
+      else print(formatNumber(value), "out");
+    } catch (error) {
+      print("SyntaxError: invalid syntax", "err");
+    }
+    return;
+  }
+
+  let name = input.replace(/;$/, "").replace(/\(\s*\)$/, "").trim().toLowerCase();
+  name = REPL_ALIASES[name] || name;
+  if (!REPL_COMMANDS[name]) name = REPL_ALIASES[name.replace(/^akshay\./, "")] || name.replace(/^akshay\./, "");
+
+  if (REPL_COMMANDS[name]) {
+    REPL_COMMANDS[name]();
+    return;
+  }
+
+  const identifier = input.match(/^[A-Za-z_]\w*/);
+  print(
+    identifier ? `NameError: name '${identifier[0]}' is not defined` : "SyntaxError: invalid syntax",
+    "err"
+  );
+  comment("try help()");
 }
 
-// Only start typing once the terminal is actually on screen.
-if (typedCode && "IntersectionObserver" in window) {
-  const terminalObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        terminalObserver.disconnect();
-        runTerminal();
+if (replForm && replInput && replOut && replBody) {
+  const history = [];
+  let historyIndex = 0;
+  let typingTimer = null;
+
+  const stopTyping = () => {
+    window.clearTimeout(typingTimer);
+    typingTimer = null;
+  };
+
+  const submit = (value) => {
+    stopTyping();
+    runCommand(value);
+    if (value.trim()) {
+      history.push(value.trim());
+      historyIndex = history.length;
+    }
+    replInput.value = "";
+  };
+
+  // Types a command into the prompt one character at a time, then runs it.
+  const typeCommand = (command, speed = 45) => {
+    stopTyping();
+    if (prefersReducedMotion) {
+      submit(command);
+      return;
+    }
+    replInput.value = "";
+    let index = 0;
+    const tick = () => {
+      replInput.value = command.slice(0, index + 1);
+      index += 1;
+      typingTimer = index < command.length ? window.setTimeout(tick, speed) : window.setTimeout(() => submit(command), 260);
+    };
+    tick();
+  };
+
+  replForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    submit(replInput.value);
+  });
+
+  replInput.addEventListener("keydown", (event) => {
+    if (typingTimer) stopTyping();
+    if (event.key === "ArrowUp" && history.length) {
+      event.preventDefault();
+      historyIndex = Math.max(0, historyIndex - 1);
+      replInput.value = history[historyIndex];
+    } else if (event.key === "ArrowDown" && history.length) {
+      event.preventDefault();
+      historyIndex = Math.min(history.length, historyIndex + 1);
+      replInput.value = history[historyIndex] || "";
+    } else if (event.key === "l" && event.ctrlKey) {
+      event.preventDefault();
+      REPL_COMMANDS.clear();
+    }
+  });
+
+  document.querySelectorAll("[data-cmd]").forEach((button) => {
+    button.addEventListener("click", () => {
+      typeCommand(button.dataset.cmd, 22);
+      // Don't pop the on-screen keyboard on phones.
+      if (finePointer) replInput.focus({ preventScroll: true });
+    });
+  });
+
+  // Clicking anywhere in the screen puts the caret in the prompt, unless
+  // the visitor is selecting text or following a link.
+  replBody.addEventListener("click", (event) => {
+    if (event.target.closest("a") || String(window.getSelection())) return;
+    replInput.focus({ preventScroll: true });
+  });
+
+  let introduced = false;
+  const introduce = () => {
+    if (introduced) return;
+    introduced = true;
+    comment("python3 · akshay.py. Type help(), or click a command below");
+    window.setTimeout(() => typeCommand("akshay.now()"), prefersReducedMotion ? 0 : 500);
+  };
+
+  if ("IntersectionObserver" in window) {
+    const introObserver = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        introObserver.disconnect();
+        introduce();
+      },
+      { threshold: 0.3 }
+    );
+    introObserver.observe(replBody);
+  } else {
+    introduce();
+  }
+}
+
+/* ---------- command palette ----------
+   Ctrl/Cmd + K (or the button in the header) opens a searchable list of
+   sections, actions and palettes. Arrow keys move, Enter runs, Esc closes.
+   Picking a palette keeps the list open so they can be compared. */
+
+const palette = document.getElementById("palette");
+const paletteInput = document.getElementById("paletteInput");
+const paletteList = document.getElementById("paletteList");
+const paletteButton = document.getElementById("paletteButton");
+
+const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+document.querySelectorAll("#paletteKey, .footer-key").forEach((element) => {
+  element.textContent = isMac ? "⌘ K" : "Ctrl K";
+});
+
+function downloadResume() {
+  const link = document.createElement("a");
+  link.href = "assets/resume.pdf";
+  link.download = "";
+  link.click();
+}
+
+const PALETTE_COMMANDS = [
+  { group: "Go to", label: "Building", hint: "01 · projects in progress", run: () => goTo("building") },
+  { group: "Go to", label: "Shipped", hint: "02", run: () => goTo("shipped") },
+  { group: "Go to", label: "Now", hint: "03 · using, learning, next", run: () => goTo("now") },
+  { group: "Go to", label: "Education", hint: "04", run: () => goTo("education") },
+  { group: "Go to", label: "Contact", hint: "05", run: () => goTo("contact") },
+  {
+    group: "Go to",
+    label: "Open the terminal",
+    hint: ">>>",
+    run: () => {
+      goTo("now");
+      window.setTimeout(() => replInput?.focus({ preventScroll: true }), prefersReducedMotion ? 0 : 700);
+    }
+  },
+  { group: "Actions", label: "Copy email address", hint: EMAIL, run: () => copyText(EMAIL, "Email address") },
+  { group: "Actions", label: "Download résumé", hint: "PDF", run: downloadResume },
+  { group: "Actions", label: "Open GitHub", hint: "@akshaysk7", run: () => window.open(GITHUB, "_blank", "noopener") },
+  { group: "Actions", label: "Open LinkedIn", hint: "Akshay S Krishnan", run: () => window.open(LINKEDIN, "_blank", "noopener") },
+  { group: "Actions", label: "Compare looks", hint: "type + palette switcher", run: () => openDock() },
+  ...LOOKS.map((look, index) => ({
+    group: "Look",
+    label: lookName(look),
+    hint: look.mood,
+    swatch: THEMES.find((t) => t.id === look.theme).swatch,
+    look: index,
+    run: () => applyLook(index, { announce: true })
+  })),
+  ...FONTS.map((font) => ({
+    group: "Type",
+    label: font.name,
+    hint: font.note,
+    font: font.id,
+    run: () => applyFont(font.id, { announce: true })
+  })),
+  ...THEMES.map((theme) => ({
+    group: "Palette",
+    label: theme.name,
+    hint: theme.note,
+    swatch: theme.swatch,
+    theme: theme.id,
+    run: () => applyTheme(theme.id, { announce: true })
+  }))
+];
+
+if (palette && paletteInput && paletteList) {
+  let matches = [];
+  let selected = 0;
+  let returnFocus = null;
+
+  const syncSelection = () => {
+    paletteList.querySelectorAll(".palette-item").forEach((item) => {
+      const isSelected = item.id === `cmd-${selected}`;
+      item.setAttribute("aria-selected", String(isSelected));
+      if (isSelected) item.scrollIntoView({ block: "nearest" });
+    });
+    if (matches.length) paletteInput.setAttribute("aria-activedescendant", `cmd-${selected}`);
+    else paletteInput.removeAttribute("aria-activedescendant");
+  };
+
+  const render = () => {
+    const terms = paletteInput.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    matches = PALETTE_COMMANDS.filter((command) => {
+      const haystack = `${command.group} ${command.label} ${command.hint} ${command.theme ? "theme colour color" : ""} ${command.font ? "font typeface" : ""} ${command.look !== undefined ? "look style font theme" : ""}`.toLowerCase();
+      return terms.every((term) => haystack.includes(term));
+    });
+    selected = Math.min(selected, Math.max(matches.length - 1, 0));
+    paletteList.textContent = "";
+
+    if (!matches.length) {
+      const empty = document.createElement("li");
+      empty.className = "palette-empty";
+      empty.setAttribute("role", "presentation");
+      empty.textContent = "Nothing matches. Try “theme”, “email” or a section name.";
+      paletteList.append(empty);
+      syncSelection();
+      return;
+    }
+
+    const active = currentTheme().id;
+    let group = null;
+    matches.forEach((command, index) => {
+      if (command.group !== group) {
+        group = command.group;
+        const heading = document.createElement("li");
+        heading.className = "palette-group";
+        heading.setAttribute("role", "presentation");
+        heading.textContent = group;
+        paletteList.append(heading);
+      }
+
+      const item = document.createElement("li");
+      item.className = "palette-item";
+      item.id = `cmd-${index}`;
+      item.setAttribute("role", "option");
+
+      if (command.swatch) {
+        const swatch = document.createElement("span");
+        swatch.className = "palette-swatch";
+        command.swatch.slice(1).forEach((colour) => {
+          const dot = document.createElement("i");
+          dot.style.background = colour;
+          swatch.append(dot);
+        });
+        item.append(swatch);
+      }
+
+      item.append(command.label);
+      const hint = document.createElement("small");
+      const isCurrent =
+        (command.theme && command.theme === active) ||
+        (command.font && command.font === currentFont().id) ||
+        (command.look !== undefined && LOOKS[command.look].font === currentFont().id && LOOKS[command.look].theme === active);
+      hint.textContent = isCurrent ? "current" : command.hint;
+      item.append(hint);
+
+      item.addEventListener("pointermove", () => {
+        if (selected === index) return;
+        selected = index;
+        syncSelection();
       });
-    },
-    { threshold: 0.25 }
-  );
-  terminalObserver.observe(typedCode.closest(".terminal") || typedCode);
-} else {
-  runTerminal();
+      item.addEventListener("click", () => run(index));
+      paletteList.append(item);
+    });
+
+    syncSelection();
+  };
+
+  const open = () => {
+    if (!palette.hidden) return;
+    returnFocus = document.activeElement;
+    palette.hidden = false;
+    paletteInput.value = "";
+    selected = 0;
+    render();
+    paletteInput.focus();
+    closeNav();
+  };
+
+  const close = () => {
+    if (palette.hidden) return;
+    palette.hidden = true;
+    returnFocus?.focus?.({ preventScroll: true });
+  };
+
+  const run = (index) => {
+    const command = matches[index];
+    if (!command) return;
+    if (command.theme || command.font || command.look !== undefined) {
+      command.run();
+      render();
+      paletteInput.focus();
+      return;
+    }
+    close();
+    command.run();
+  };
+
+  paletteButton?.addEventListener("click", open);
+  palette.querySelector("[data-close]")?.addEventListener("click", close);
+  paletteInput.addEventListener("input", () => {
+    selected = 0;
+    render();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+      event.preventDefault();
+      if (palette.hidden) open();
+      else close();
+      return;
+    }
+    if (palette.hidden) return;
+
+    if (event.key === "Escape") {
+      event.preventDefault();
+      close();
+    } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      if (!matches.length) return;
+      const direction = event.key === "ArrowDown" ? 1 : -1;
+      selected = (selected + direction + matches.length) % matches.length;
+      syncSelection();
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      run(selected);
+    } else if (event.key === "Tab") {
+      // The search field is the only stop inside the dialog.
+      event.preventDefault();
+      paletteInput.focus();
+    }
+  });
+}
+
+/* ---------- look dock ----------
+   A floating switcher for comparing looks. It opens with #demo in the URL
+   or from "Compare looks" in the command palette. Arrow keys step through
+   looks while it's open (unless you're typing somewhere), and "auto" cycles
+   them every few seconds. */
+
+const dock = document.getElementById("dock");
+
+function openDock() {
+  if (!dock) return;
+  // Comparing means switching fast, so fetch every pairing's fonts up front.
+  Object.keys(window.FONT_CSS || {}).forEach((id) => window.loadFontCSS(id));
+  dock.hidden = false;
+  document.dispatchEvent(new CustomEvent("dockopen"));
+}
+
+if (dock) {
+  const dockName = document.getElementById("dockName");
+  const dockMeta = document.getElementById("dockMeta");
+  const dockCount = document.getElementById("dockCount");
+  const dockDots = document.getElementById("dockDots");
+  const dockPlay = document.getElementById("dockPlay");
+  let current = -1;
+  let playTimer = null;
+
+  // Which look is showing now, if the current font and palette match one.
+  const matchCurrent = () =>
+    LOOKS.findIndex((look) => look.font === currentFont().id && look.theme === currentTheme().id);
+
+  LOOKS.forEach((look, index) => {
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.setAttribute("aria-label", lookName(look));
+    dot.title = lookName(look);
+    dot.addEventListener("click", () => show(index));
+    dockDots.append(dot);
+  });
+
+  const paint = () => {
+    current = matchCurrent();
+    const font = currentFont();
+    const theme = currentTheme();
+    dockName.textContent = theme.lab ? theme.name : `${font.name} × ${theme.name}`;
+    dockMeta.textContent = theme.lab
+      ? `${theme.fonts} · Theme Lab`
+      : `${font.note} · ${current >= 0 ? LOOKS[current].mood : theme.note}`;
+    dockCount.textContent = current >= 0 ? `${current + 1} / ${LOOKS.length}` : "custom";
+    [...dockDots.children].forEach((dot, index) =>
+      dot.setAttribute("aria-current", String(index === current))
+    );
+  };
+
+  function show(index) {
+    const next = (index + LOOKS.length) % LOOKS.length;
+    applyLook(next);
+    paint();
+  }
+
+  // From a custom mix, "next" starts at the first look and "prev" at the last.
+  const step = (direction) =>
+    show(current < 0 ? (direction > 0 ? 0 : LOOKS.length - 1) : current + direction);
+
+  const setPlaying = (on) => {
+    window.clearInterval(playTimer);
+    playTimer = on ? window.setInterval(() => step(1), 3500) : null;
+    dockPlay.setAttribute("aria-pressed", String(on));
+  };
+
+  document.getElementById("dockPrev").addEventListener("click", () => { setPlaying(false); step(-1); });
+  document.getElementById("dockNext").addEventListener("click", () => { setPlaying(false); step(1); });
+  dockPlay.addEventListener("click", () => setPlaying(dockPlay.getAttribute("aria-pressed") !== "true"));
+  document.getElementById("dockClose").addEventListener("click", () => {
+    setPlaying(false);
+    dock.hidden = true;
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (dock.hidden || event.target.closest("input, textarea")) return;
+    if (event.key === "ArrowRight") { setPlaying(false); step(1); }
+    else if (event.key === "ArrowLeft") { setPlaying(false); step(-1); }
+  });
+
+  document.addEventListener("themechange", paint);
+  document.addEventListener("dockopen", paint);
+  paint();
+
+  if (/demo/.test(window.location.hash + window.location.search)) openDock();
 }
 
 /* ---------- brand decode ----------
@@ -348,13 +1139,13 @@ const surfaceCanvas = document.getElementById("landscape");
 if (surfaceCanvas && surfaceCanvas.getContext) {
   const ctx = surfaceCanvas.getContext("2d");
 
-  // Colours come from the palette in styles.css, read once at startup.
-  const palette = getComputedStyle(document.documentElement);
-  const LINE_RGB = palette.getPropertyValue("--plot-line").trim() || "206, 138, 96";
-  const LINE_FAR_RGB = palette.getPropertyValue("--plot-line-far").trim() || LINE_RGB;
-  const TRAIL_RGB = palette.getPropertyValue("--plot-trail").trim() || "226, 230, 237";
-  const nearRGB = LINE_RGB.split(",").map(Number);
-  const farRGB = LINE_FAR_RGB.split(",").map(Number);
+  // Colours come from the palette in styles.css: read at startup and again
+  // whenever the palette changes (see readColours below).
+  let LINE_RGB = "";
+  let TRAIL_RGB = "";
+  let MONO = "ui-monospace, monospace";
+  let BAND_STYLES = [];
+  let TRAIL_STYLES = [];
 
   const GRID = 34; // vertices per side
   const EXTENT = 2; // the surface spans -EXTENT..EXTENT world units
@@ -380,18 +1171,34 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
   const screenY = new Float32Array(vertexCount);
   const depths = new Float32Array(vertexCount);
 
-  // The colours never change, so build the stroke styles once, not per frame.
-  // Bands run from the near colour to the far one, fading as they go, so a
-  // palette can send the far side of the surface into another colour.
-  const BAND_STYLES = Array.from({ length: FOG_BANDS }, (_, b) => {
-    const t = b / (FOG_BANDS - 1);
-    const rgb = nearRGB.map((c, i) => Math.round(c + (farRGB[i] - c) * t)).join(", ");
-    return `rgba(${rgb}, ${(0.32 - t * 0.26).toFixed(3)})`;
+  // Build the stroke styles once per palette, not per frame. Bands run from
+  // the near colour to the far one, fading as they go, so a palette can send
+  // the far side of the surface into another colour.
+  function readColours() {
+    const styles = getComputedStyle(document.documentElement);
+    LINE_RGB = styles.getPropertyValue("--plot-line").trim() || "78, 168, 255";
+    const lineFarRGB = styles.getPropertyValue("--plot-line-far").trim() || LINE_RGB;
+    TRAIL_RGB = styles.getPropertyValue("--plot-trail").trim() || "255, 255, 255";
+    MONO = styles.getPropertyValue("--mono").trim() || MONO;
+    const nearRGB = LINE_RGB.split(",").map(Number);
+    const farRGB = lineFarRGB.split(",").map(Number);
+
+    BAND_STYLES = Array.from({ length: FOG_BANDS }, (_, b) => {
+      const t = b / (FOG_BANDS - 1);
+      const rgb = nearRGB.map((c, i) => Math.round(c + (farRGB[i] - c) * t)).join(", ");
+      return `rgba(${rgb}, ${(0.32 - t * 0.26).toFixed(3)})`;
+    });
+    TRAIL_STYLES = Array.from(
+      { length: TRAIL_BANDS },
+      (_, b) => `rgba(${TRAIL_RGB}, ${(((b + 1) / TRAIL_BANDS) * 0.85).toFixed(3)})`
+    );
+  }
+
+  readColours();
+  document.addEventListener("themechange", () => {
+    readColours();
+    if (prefersReducedMotion) render();
   });
-  const TRAIL_STYLES = Array.from(
-    { length: TRAIL_BANDS },
-    (_, b) => `rgba(${TRAIL_RGB}, ${(((b + 1) / TRAIL_BANDS) * 0.85).toFixed(3)})`
-  );
 
   let width = 0;
   let height = 0;
@@ -613,7 +1420,7 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
       // The first run reports what an optimiser would: its step and loss.
       if (index === 0) {
         const value = Math.max(0, (lossAt(run.u, run.v) - low) / (high - low || 1));
-        ctx.font = '400 11px "IBM Plex Mono", ui-monospace, monospace';
+        ctx.font = `400 11px ${MONO}`;
         ctx.fillStyle = `rgba(${TRAIL_RGB}, 0.7)`;
         ctx.fillText(
           `step ${String(run.step).padStart(3, "0")}  loss ${value.toFixed(3)}`,
@@ -732,7 +1539,7 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
       // starts from the grid point nearest the click and takes over the
       // readout; the oldest run makes way once there are too many.
       document.addEventListener("click", (event) => {
-        if (!width || event.target.closest("a, button, .hero-portrait, .focus-card, .project, .contact-card")) return;
+        if (!width || event.target.closest("a, button, input, .hero-portrait, .terminal, .stack, .project, .contact-card, .palette")) return;
         if (String(window.getSelection())) return;
 
         let nearest = -1;
@@ -773,26 +1580,6 @@ if (surfaceCanvas && surfaceCanvas.getContext) {
       resize();
       if (prefersReducedMotion) render();
     }, 150);
-  });
-}
-
-/* ---------- terminal tilt ----------
-   On desktop the terminal sits at a slight 3D angle (see styles.css) and
-   leans toward the pointer while it is over it. */
-
-const terminalWindow = document.querySelector(".terminal");
-
-if (terminalWindow && !prefersReducedMotion && window.matchMedia("(hover: hover)").matches) {
-  terminalWindow.addEventListener("pointermove", (event) => {
-    const rect = terminalWindow.getBoundingClientRect();
-    const x = (event.clientX - rect.left) / rect.width - 0.5;
-    const y = (event.clientY - rect.top) / rect.height - 0.5;
-    const angle = Math.hypot(x, y) * 12;
-    terminalWindow.style.rotate = angle > 0.2 ? `${-y} ${x} 0 ${angle}deg` : "";
-  });
-
-  terminalWindow.addEventListener("pointerleave", () => {
-    terminalWindow.style.rotate = "";
   });
 }
 

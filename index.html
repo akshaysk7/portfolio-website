@@ -1,19 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="plum">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Akshay S Krishnan — Learning Python, building with it</title>
   <meta name="description" content="Akshay S Krishnan — 2nd year B.Tech CSE (AI/ML) at SRM Ramapuram. Currently deep in Python, DSA and machine learning, building a Premier League match predictor and a document Q&amp;A system." />
-  <meta name="theme-color" content="#05070a" />
+  <meta name="theme-color" content="#23152b" />
   <meta property="og:title" content="Akshay S Krishnan — Learning Python, building with it" />
   <meta property="og:description" content="2nd year CSE (AI/ML) student in Chennai. Python, DSA, and machine learning — learned by building." />
   <meta property="og:type" content="website" />
   <link rel="icon" href="assets/monogram.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <script>
+    // Web fonts for each type pairing, fetched only when that pairing is used.
+    window.FONT_CSS = {
+      inter: "family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500",
+      grotesk: "family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500",
+      sora: "family=Sora:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500",
+      syne: "family=Syne:wght@600;700;800&family=Manrope:wght@400;500;600&family=Space+Mono:wght@400;700",
+      chakra: "family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=Share+Tech+Mono",
+      outfit: "family=Outfit:wght@300;400;500;600;700&family=DM+Mono:wght@400;500",
+      // every font the Theme Lab palettes use (from the handoff's themes.css)
+      lab: "family=Chakra+Petch:wght@400;500;600;700&family=Tomorrow:wght@400;500;600;700&family=Oxanium:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&family=Saira:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=JetBrains+Mono:wght@400;500&family=Space+Mono:wght@400;700&family=Kode+Mono:wght@400;500&family=Share+Tech+Mono"
+    };
+    window.LAB_THEMES = ["klein", "bone", "oxblood", "lilac", "plum", "steel"];
+    window.loadFontCSS = function (id) {
+      if (!window.FONT_CSS[id] || document.getElementById("font-" + id)) return;
+      var link = document.createElement("link");
+      link.id = "font-" + id;
+      link.rel = "stylesheet";
+      link.href = "https://fonts.googleapis.com/css2?" + window.FONT_CSS[id] + "&display=swap";
+      document.head.appendChild(link);
+    };
+
+    // Before first paint: restore the chosen palette and type, and cover the
+    // page if the boot sequence is about to play (once per visit, never with
+    // reduced motion). styles.css lifts the cover on its own if script.js
+    // never runs.
+    (function () {
+      var root = document.documentElement;
+      try {
+        var theme = localStorage.getItem("theme");
+        if (theme) root.dataset.theme = theme;
+        // Plum & Sky is the default look; its fonts are in the main <link>.
+        var active = root.dataset.theme;
+        if (active !== "plum" && window.LAB_THEMES.indexOf(active) > -1) window.loadFontCSS("lab");
+        var font = localStorage.getItem("font");
+        if (font && font !== "lab" && window.FONT_CSS[font]) {
+          root.dataset.font = font;
+          window.loadFontCSS(font);
+        }
+      } catch (e) {}
+      try {
+        var still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (!still && !sessionStorage.getItem("booted")) root.classList.add("is-booting");
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   <div class="scroll-progress" aria-hidden="true"><span id="scrollBar"></span></div>
@@ -34,14 +80,20 @@
       <span class="brand-caret" aria-hidden="true"></span>
     </a>
 
-    <button class="menu-button" id="menuButton" type="button" aria-expanded="false" aria-controls="site-nav">
-      <span id="menuLabel">menu</span>
-    </button>
+    <div class="header-tools">
+      <button class="kbar-button" id="paletteButton" type="button" aria-label="Open command palette" aria-haspopup="dialog">
+        <kbd id="paletteKey">Ctrl K</kbd>
+      </button>
+
+      <button class="menu-button" id="menuButton" type="button" aria-expanded="false" aria-controls="site-nav">
+        <span id="menuLabel">menu</span>
+      </button>
+    </div>
 
     <nav id="site-nav" class="site-nav" aria-label="Primary">
-      <a href="#now">now</a>
       <a href="#building">building</a>
       <a href="#shipped">shipped</a>
+      <a href="#now">now</a>
       <a href="#education">education</a>
       <a href="#contact">contact</a>
       <a class="nav-cta" href="assets/resume.pdf" download>r&eacute;sum&eacute; <span aria-hidden="true">&darr;</span></a>
@@ -90,110 +142,16 @@
       </div>
     </section>
 
-    <section id="now" class="section">
-      <div class="section-heading reveal">
-        <p class="eyebrow"><span class="eyebrow-dot"></span>Right now</p>
-        <h2>What I&rsquo;m learning this semester</h2>
-        <p class="section-lede">
-          Everything below is live and in progress &mdash; not a list of things I once touched.
-          Python is the spine of all of it.
-        </p>
-      </div>
-
-      <article class="focus-card reveal">
-        <div class="focus-copy">
-          <p class="focus-tag">Primary focus</p>
-          <h3>Python, from the fundamentals up</h3>
-          <p>
-            I restarted Python from the ground up rather than skimming syntax and moving on.
-            The goal is fluency I can rely on: clean data handling, readable code, and enough
-            comfort with the language that the hard part of a project is the problem, not the tooling.
-          </p>
-          <ul class="focus-points">
-            <li><strong>Fundamentals</strong> &mdash; data model, iteration, functions, error handling, writing code I can re-read a month later</li>
-            <li><strong>Applied to data</strong> &mdash; pandas for cleaning and reshaping real, messy datasets</li>
-            <li><strong>Applied to DSA</strong> &mdash; solving problems in Python daily so the language becomes reflex</li>
-            <li><strong>Applied to ML</strong> &mdash; scikit-learn, with evaluation done honestly</li>
-          </ul>
-        </div>
-
-        <div class="terminal" aria-hidden="true">
-          <div class="terminal-bar"><i></i><i></i><i></i><span>python3</span></div>
-          <pre class="terminal-body"><code id="typedCode"></code><span class="caret"></span></pre>
-        </div>
-      </article>
-
-      <div class="track-grid">
-        <article class="track-card reveal">
-          <header>
-            <h3>DSA in Python</h3>
-            <span class="chip chip-live">Daily</span>
-          </header>
-          <p>
-            Practising every day and currently working through <strong>arrays</strong>. It&rsquo;s also a graded
-            subject this semester, so the theory and the practice reinforce each other.
-          </p>
-          <p class="track-meta">Current topic <strong>Arrays</strong></p>
-        </article>
-
-        <article class="track-card reveal">
-          <header>
-            <h3>Machine learning</h3>
-            <span class="chip chip-live">In progress</span>
-          </header>
-          <p>
-            Learning it by building rather than by collecting courses. That means the unglamorous
-            parts: data cleaning, feature engineering, and being rigorous about evaluation instead of
-            chasing a nice-looking accuracy number.
-          </p>
-          <p class="track-meta">Stack <strong>pandas &middot; scikit-learn</strong></p>
-        </article>
-
-        <article class="track-card reveal">
-          <header>
-            <h3>Backend &mdash; Django</h3>
-            <span class="chip chip-next">Starting soon</span>
-          </header>
-          <p>
-            The next step for Python: taking it server-side. Working through Traversy Media&rsquo;s
-            <em>Django Dev to Deployment</em> course so the models I build have somewhere to live.
-          </p>
-          <p class="track-meta">Goal <strong>Ship something deployed</strong></p>
-        </article>
-
-        <article class="track-card reveal">
-          <header>
-            <h3>Frontend</h3>
-            <span class="chip chip-live">Learning by building</span>
-          </header>
-          <p>
-            I&rsquo;m actively learning frontend by developing this portfolio &mdash; reading the
-            code, changing it, and working out why it behaves the way it does.
-          </p>
-          <p class="track-meta">Live example <strong>This page</strong></p>
-        </article>
-      </div>
-
-      <div class="coursework reveal">
-        <p class="coursework-label">Coursework this semester</p>
-        <ul>
-          <li>Operating Systems</li>
-          <li>Computer Organisation &amp; Architecture</li>
-          <li>Data Structures &amp; Algorithms</li>
-        </ul>
-      </div>
-    </section>
-
     <section id="building" class="section">
       <div class="section-heading reveal">
-        <p class="eyebrow"><span class="eyebrow-dot"></span>Building</p>
+        <p class="eyebrow"><span class="eyebrow-num">01</span><span class="eyebrow-dot"></span>Building</p>
         <h2>Two projects in progress</h2>
         <p class="section-lede">
           Both are unfinished on purpose &mdash; they&rsquo;re where the Python and ML learning actually gets tested.
         </p>
       </div>
 
-      <article class="project project-featured reveal">
+      <article class="project project-featured reveal" id="pl-predictor">
         <div class="project-head">
           <div>
             <p class="project-kicker">Machine learning &middot; In progress</p>
@@ -206,6 +164,13 @@
           A supervised classification model that predicts match outcomes &mdash; home win, draw, or away win &mdash;
           from historical match data.
         </p>
+
+        <ol class="stages" aria-label="Where the project is">
+          <li class="is-done"><span>Data</span></li>
+          <li class="is-current" aria-current="step"><span>Feature engineering</span></li>
+          <li><span>Modelling</span></li>
+          <li><span>Evaluation</span></li>
+        </ol>
 
         <div class="project-detail">
           <div>
@@ -236,7 +201,7 @@
         </footer>
       </article>
 
-      <article class="project reveal">
+      <article class="project reveal" id="rag">
         <div class="project-head">
           <div>
             <p class="project-kicker">Team project &middot; In progress</p>
@@ -249,6 +214,18 @@
           A retrieval-augmented generation system that answers questions about college rules and
           circulars &mdash; and cites the source document for every answer it gives.
         </p>
+
+        <div class="flow" role="img" aria-label="A question is matched against the college documents. If they cover it, the answer comes back with its source. If not, the system refuses and logs the question to a gap report.">
+          <span class="flow-node">question</span>
+          <i class="flow-arrow" aria-hidden="true"></i>
+          <span class="flow-node">retrieve from circulars</span>
+          <i class="flow-arrow" aria-hidden="true"></i>
+          <span class="flow-node flow-decision">covered?</span>
+          <span class="flow-branches">
+            <span class="flow-branch flow-yes"><b>yes</b>answer + cited source</span>
+            <span class="flow-branch flow-no"><b>no</b>refuse &middot; log to gap report</span>
+          </span>
+        </div>
 
         <div class="project-detail">
           <div>
@@ -279,12 +256,12 @@
 
     <section id="shipped" class="section">
       <div class="section-heading reveal">
-        <p class="eyebrow"><span class="eyebrow-dot"></span>Shipped</p>
+        <p class="eyebrow"><span class="eyebrow-num">02</span><span class="eyebrow-dot"></span>Shipped</p>
         <h2>Things that are done and running</h2>
       </div>
 
       <div class="shipped-grid">
-        <article class="shipped-card reveal">
+        <article class="shipped-card reveal" id="scheduler-bot">
           <h3>Telegram content scheduler bot</h3>
           <p>
             A Telegram bot that schedules LinkedIn posts twice a week to keep a profile consistently
@@ -293,7 +270,7 @@
           <ul class="tech-list"><li>Automation</li><li>Bot API</li><li>Scheduling</li></ul>
         </article>
 
-        <article class="shipped-card reveal">
+        <article class="shipped-card reveal" id="this-site">
           <h3>This portfolio</h3>
           <p>
             Vibe-coded with AI assistance rather than written from scratch, and deliberately kept
@@ -308,9 +285,82 @@
       </div>
     </section>
 
+    <!-- A /now panel in place of a semester syllabus: what's in use, what's
+         being learned, what's next. Every entry points at where it's used,
+         and there are no percentage bars. Update the date when it changes. -->
+    <section id="now" class="section">
+      <div class="section-heading reveal">
+        <p class="eyebrow">
+          <span class="eyebrow-num">03</span><span class="eyebrow-dot"></span>Now
+          <span class="eyebrow-meta">updated Sep 2026</span>
+        </p>
+        <h2>Using, learning, next</h2>
+        <p class="section-lede">
+          A snapshot rather than a skills list &mdash; no percentage bars, and every entry points to
+          where it&rsquo;s actually used. Python is the spine of all of it.
+        </p>
+      </div>
+
+      <div class="now-grid">
+        <div class="stack reveal">
+          <div class="stack-group">
+            <h3 class="stack-label"><span class="stack-dot is-live" aria-hidden="true"></span>Using in projects</h3>
+            <ul class="stack-list">
+              <li><strong>Python</strong><a href="#building">every project</a></li>
+              <li><strong>pandas</strong><a href="#pl-predictor">PL predictor</a></li>
+              <li><strong>scikit-learn</strong><a href="#pl-predictor">PL predictor</a></li>
+              <li><strong>Embeddings &middot; vector DB</strong><a href="#rag">College Q&amp;A</a></li>
+              <li><strong>LLM APIs</strong><a href="#rag">College Q&amp;A</a></li>
+              <li><strong>Telegram Bot API</strong><a href="#scheduler-bot">Scheduler bot</a></li>
+            </ul>
+          </div>
+
+          <div class="stack-group">
+            <h3 class="stack-label"><span class="stack-dot is-learning" aria-hidden="true"></span>Learning now</h3>
+            <ul class="stack-list">
+              <li><strong>DSA in Python</strong><span>daily &middot; arrays</span></li>
+              <li><strong>ML, by building</strong><span>features &middot; honest evaluation</span></li>
+              <li><strong>HTML &middot; CSS &middot; JS</strong><a href="#this-site">this site</a></li>
+            </ul>
+          </div>
+
+          <div class="stack-group">
+            <h3 class="stack-label"><span class="stack-dot" aria-hidden="true"></span>Up next</h3>
+            <ul class="stack-list">
+              <li><strong>Django</strong><span>Dev to Deployment</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="terminal reveal" id="repl">
+          <div class="terminal-bar"><i></i><i></i><i></i><span>python3 &mdash; akshay.py</span></div>
+          <div class="terminal-body" id="replBody">
+            <div class="repl-out" id="replOut" role="log" aria-live="polite" aria-label="Terminal output"></div>
+            <form class="repl-line" id="replForm" autocomplete="off">
+              <label class="pp" for="replInput" aria-hidden="true">&gt;&gt;&gt;</label>
+              <input
+                id="replInput"
+                type="text"
+                spellcheck="false"
+                autocapitalize="off"
+                aria-label="Type a command, for example help()"
+              />
+            </form>
+          </div>
+          <div class="repl-chips" aria-label="Try a command">
+            <button type="button" data-cmd="akshay.now()">now()</button>
+            <button type="button" data-cmd="projects()">projects()</button>
+            <button type="button" data-cmd="stack()">stack()</button>
+            <button type="button" data-cmd="themes()">themes()</button>
+            <button type="button" data-cmd="help()">help()</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="education" class="section">
       <div class="section-heading reveal">
-        <p class="eyebrow"><span class="eyebrow-dot"></span>Education</p>
+        <p class="eyebrow"><span class="eyebrow-num">04</span><span class="eyebrow-dot"></span>Education</p>
         <h2>Where I&rsquo;m studying</h2>
       </div>
 
@@ -329,6 +379,14 @@
             <h3>SRM Institute of Science and Technology, Ramapuram</h3>
             <p class="timeline-role">B.Tech, Computer Science &amp; Engineering &mdash; specialisation in Artificial Intelligence &amp; Machine Learning</p>
             <p class="timeline-note">Second year &middot; Chennai, Tamil Nadu</p>
+            <div class="coursework">
+              <p class="coursework-label">Coursework this semester</p>
+              <ul>
+                <li>Operating Systems</li>
+                <li>Computer Organisation &amp; Architecture</li>
+                <li>Data Structures &amp; Algorithms</li>
+              </ul>
+            </div>
           </div>
         </article>
 
@@ -345,7 +403,7 @@
     <section id="contact" class="section">
       <div class="contact-card reveal">
         <div class="section-heading">
-          <p class="eyebrow"><span class="eyebrow-dot"></span>Contact</p>
+          <p class="eyebrow"><span class="eyebrow-num">05</span><span class="eyebrow-dot"></span>Contact</p>
           <h2>Let&rsquo;s talk</h2>
           <p class="section-lede">
             I&rsquo;m open to internships, collaborations, and anyone who wants to argue about
@@ -375,14 +433,62 @@
             <i aria-hidden="true">&darr;</i>
           </a>
         </div>
+
+        <p class="contact-foot">
+          <button class="copy-button" type="button" data-copy="akshaysk2007@gmail.com">
+            <span aria-hidden="true">&#x2398;</span> Copy email address
+          </button>
+        </p>
       </div>
     </section>
   </main>
 
   <footer class="site-footer">
     <p><strong>Akshay S Krishnan</strong> &middot; Chennai, India</p>
-    <p class="footer-note">Built in Chennai.</p>
+    <p class="footer-note">Built in Chennai &middot; press <kbd class="footer-key">Ctrl K</kbd> to get around</p>
   </footer>
+
+  <!-- Command palette: Ctrl/Cmd + K, or the button in the header. -->
+  <div class="palette" id="palette" hidden>
+    <div class="palette-scrim" data-close></div>
+    <div class="palette-panel" role="dialog" aria-modal="true" aria-label="Command palette">
+      <div class="palette-search">
+        <span aria-hidden="true">&gt;</span>
+        <input
+          id="paletteInput"
+          type="text"
+          placeholder="Jump to a section, copy email, change theme&hellip;"
+          role="combobox"
+          aria-expanded="true"
+          aria-controls="paletteList"
+          aria-autocomplete="list"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <kbd>esc</kbd>
+      </div>
+      <ul class="palette-list" id="paletteList" role="listbox" aria-label="Commands"></ul>
+    </div>
+  </div>
+
+  <!-- Look dock: compare type + palette pairings. Opens with #demo in the
+       URL, or "Compare looks" in the command palette. -->
+  <aside class="dock" id="dock" aria-label="Compare looks" hidden>
+    <div class="dock-head">
+      <span>Look <span id="dockCount"></span></span>
+      <button type="button" id="dockClose" aria-label="Close look switcher">&times;</button>
+    </div>
+    <p class="dock-name" id="dockName"></p>
+    <p class="dock-meta" id="dockMeta"></p>
+    <div class="dock-row">
+      <button type="button" id="dockPrev" aria-label="Previous look">&larr; prev</button>
+      <button type="button" class="dock-play" id="dockPlay" aria-pressed="false">auto</button>
+      <button type="button" id="dockNext" aria-label="Next look">next &rarr;</button>
+    </div>
+    <div class="dock-dots" id="dockDots" aria-label="All looks"></div>
+  </aside>
+
+  <p class="toast" id="toast" role="status" aria-live="polite"></p>
 
   <script src="script.js"></script>
 </body>
