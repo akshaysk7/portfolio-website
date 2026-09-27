@@ -347,8 +347,8 @@ function goTo(id) {
 if (root.classList.contains("is-booting")) {
   const BOOT_LINES = [
     [["pp", ">>> "], ["", "import akshay"]],
-    [["dim", "loading projects .... "], ["ok", "2 in progress"]],
-    [["dim", "loading shipped ..... "], ["ok", "2 running"]],
+    [["dim", "loading projects .... "], ["ok", "1 in progress"]],
+    [["dim", "loading shipped ..... "], ["ok", "3 shipped"]],
     [["dim", "loading now() ....... "], ["ok", "python · dsa · ml"]],
     [["pp", ">>> "], ["", "akshay.render()"]]
   ];
@@ -472,7 +472,7 @@ const REPL_COMMANDS = {
 
   projects() {
     print(["[", { text: "building", cls: "out" }, "] ", { text: "Premier League Match Predictor", href: "#pl-predictor" }, "  feature engineering"]);
-    print(["[", { text: "building", cls: "out" }, "] ", { text: "College Document Q&A (RAG)", href: "#rag" }, "      team project"]);
+    print(["[", { text: "shipped", cls: "key" }, "]  ", { text: "College Document Q&A (RAG)", href: "#rag" }, "      team project, under review"]);
     print(["[", { text: "shipped", cls: "key" }, "]  ", { text: "Telegram scheduler bot", href: "#scheduler-bot" }, "          posts twice a week"]);
     print(["[", { text: "shipped", cls: "key" }, "]  ", { text: "This portfolio", href: "#this-site" }, "                  you're in it"]);
   },
@@ -758,7 +758,7 @@ function downloadResume() {
 }
 
 const PALETTE_COMMANDS = [
-  { group: "Go to", label: "Building", hint: "01 · projects in progress", run: () => goTo("building") },
+  { group: "Go to", label: "Building", hint: "01 · currently building", run: () => goTo("building") },
   { group: "Go to", label: "Shipped", hint: "02", run: () => goTo("shipped") },
   { group: "Go to", label: "Now", hint: "03 · using, learning, next", run: () => goTo("now") },
   { group: "Go to", label: "Education", hint: "04", run: () => goTo("education") },

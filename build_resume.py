@@ -211,7 +211,7 @@ def build():
 
     story.append(Paragraph(
         "College Document Q&amp;A System (RAG) &mdash; "
-        "<font color='#6b7280'>team project, in progress</font>",
+        "<font color='#6b7280'>team project, shipped, under review</font>",
         styles["entry"]))
     story.append(Paragraph("Python, vector database, embeddings, LLM API", styles["entrysub"]))
     story.append(bullets([
